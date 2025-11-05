@@ -1,7 +1,8 @@
 <script>
-	import { page } from '$app/state';
-	import logo from '$lib/images/svelte-logo.svg';
-	import github from '$lib/images/github.svg';
+	//import { page } from '$app/state';
+	//import logo from '$lib/images/svelte-logo.svg';
+	//import github from '$lib/images/github.svg';
+    import '$lib/style/navbar.css';
 </script>
 <nav class="navbar">
         <div class="navbar-brand">
@@ -11,19 +12,13 @@
         
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a href="/" class="nav-link">Home</a>
+                <a href="/" class="nav-link">Inicio</a>
             </li>
             <li class="nav-item">
-                <a href="/about" class="nav-link">About</a>
+                <a href="/about" class="nav-link">Sobre nosotros</a>
             </li>
             <li class="nav-item">
-                <a href="/sverdle" class="nav-link">Sverdle</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">Tareas</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">Calificaciones</a>
+                <a href="/sverdle" class="nav-link-active">Entrar</a>
             </li>
         </ul>
         
@@ -79,206 +74,3 @@
 	</div>
 </header>
 -->
-<style>
-        :root {
-            --primary-color: #1a73e8;
-            --primary-dark: #0d47a1;
-            --text-color: #202124;
-            --text-light: #5f6368;
-            --background: #ffffff;
-            --background-hover: #f8f9fa;
-            --border-color: #dadce0;
-            --shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        }
-
-        body {
-            background-color: #f8f9fa;
-            color: var(--text-color);
-            padding: 20px;
-        }
-
-        .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: var(--background);
-            padding: 0 16px;
-            height: 64px;
-            box-shadow: var(--shadow);
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .brand-name {
-            font-size: 20px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .navbar-nav {
-            display: flex;
-            align-items: center;
-            list-style: none;
-            height: 100%;
-        }
-
-        .nav-item {
-            position: relative;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            height: 100%;
-            padding: 0 16px;
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color);
-            background-color: var(--background-hover);
-        }
-
-        .nav-link.active {
-            color: var(--primary-color);
-        }
-
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: var(--primary-color);
-            border-radius: 3px 3px 0 0;
-        }
-
-        .navbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .user-profile:hover {
-            background-color: var(--background-hover);
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .username {
-            font-size: 14px;
-            color: var(--text-color);
-        }
-
-        .icon-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            color: var(--text-light);
-        }
-
-        .icon-button:hover {
-            background-color: var(--background-hover);
-            color: var(--primary-color);
-        }
-
-        .demo-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            margin-bottom: 16px;
-            color: var(--text-color);
-        }
-
-        p {
-            line-height: 1.6;
-            color: var(--text-light);
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 12px;
-            }
-            
-            .brand-name {
-                display: none;
-            }
-            
-            .nav-link {
-                padding: 0 12px;
-                font-size: 13px;
-            }
-            
-            .username {
-                display: none;
-            }
-        }
-    </style>
