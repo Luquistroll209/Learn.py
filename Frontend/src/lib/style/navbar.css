@@ -4,9 +4,10 @@
     --text-color: #202124;
     --text-light: #5f6368;
     --background: #ffffff;
-    --background-hover: #d1d1d1;
+    --background-hover: #f1f3f4;
     --border-color: #dadce0;
     --shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --shadow-heavy: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 * {
@@ -19,20 +20,23 @@
 body {
     background-color: #f8f9fa;
     color: var(--text-color);
-    padding: 20px;
+    padding: 0;
+    overflow-x: hidden;
 }
 
+/* Navbar */
 .navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: var(--background);
-    padding: 0 16px;
-    height: 64px;
+    padding: 0 24px;
+    height: 70px;
     box-shadow: var(--shadow);
-    border-radius: 8px;
-    margin-bottom: 20px;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-radius: 20px;
 }
 
 .navbar-brand {
@@ -43,22 +47,26 @@ body {
 }
 
 .logo {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
 }
 
 .brand-name {
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 22px;
+    font-weight: 600;
     color: var(--text-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .navbar-nav {
@@ -66,6 +74,7 @@ body {
     align-items: center;
     list-style: none;
     height: 100%;
+    gap: 5px;
 }
 
 .nav-item {
@@ -79,40 +88,33 @@ body {
     display: flex;
     align-items: center;
     height: 60%;
-    padding: 0 16px;
+    padding: 0 20px;
     color: var(--text-light);
     text-decoration: none;
     font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    font-size: 15px;
+    transition: all 0.3s ease;
     position: relative;
+    border-radius: 20px;
 }
-.nav-link-active{
-    background-color: #2d79dd;
-    padding: 10px;
-    border-radius: 10px;
-    color: black;
-    transition: 0.5s;
-}
-.nav-link-active:hover{
-    background-color: #1f4f8f;
-}
+
 .nav-link:hover {
     color: var(--primary-color);
     background-color: var(--background-hover);
-    border-radius: 20px;
 }
 
 .nav-link.active {
     color: var(--primary-color);
+    background-color: rgba(26, 115, 232, 0.1);
 }
 
 .nav-link.active::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
-    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
     height: 3px;
     background-color: var(--primary-color);
     border-radius: 3px 3px 0 0;
@@ -121,15 +123,53 @@ body {
 .navbar-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.auth-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.btn-login {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-login:hover {
+    background-color: rgba(26, 115, 232, 0.1);
+}
+
+.btn-register {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.btn-register:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
 }
 
 .user-profile {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 8px 16px;
+    border-radius: 25px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -139,21 +179,22 @@ body {
 }
 
 .avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .username {
     font-size: 14px;
     color: var(--text-color);
+    font-weight: 500;
 }
 
 .icon-button {
@@ -173,7 +214,6 @@ body {
     color: var(--primary-color);
 }
 
-/* Menú hamburguesa para móviles */
 .menu-toggle {
     display: none;
     flex-direction: column;
@@ -193,134 +233,172 @@ body {
     transition: all 0.3s ease;
 }
 
-.demo-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Panel de Login/Register */
+.auth-panel {
+    position: fixed;
+    top: 0;
+    left: -400px;
+    width: 380px;
+    height: 100vh;
+    background: white;
+    box-shadow: var(--shadow-heavy);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+    overflow-y: auto;
 }
 
-h1 {
-    margin-bottom: 16px;
+.auth-panel.active {
+    left: 0;
+}
+
+.auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 998;
+}
+
+.auth-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.auth-container {
+    padding: 40px 30px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.auth-title {
+    font-size: 24px;
+    font-weight: 600;
     color: var(--text-color);
 }
 
-p {
-    line-height: 1.6;
+.close-auth {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
     color: var(--text-light);
-    margin-bottom: 16px;
+    transition: color 0.3s ease;
 }
 
-/* Media Queries para Responsive */
-@media (max-width: 992px) {
-    .navbar-nav {
-        gap: 5px;
-    }
-    
-    .nav-link {
-        padding: 0 12px;
-        font-size: 13px;
-    }
+.close-auth:hover {
+    color: var(--text-color);
 }
 
-@media (max-width: 768px) {
-    .navbar {
-        padding: 0 12px;
-        flex-wrap: wrap;
-        height: auto;
-        min-height: 64px;
-    }
-    
-    .brand-name {
-        display: none;
-    }
-    
-    .nav-link {
-        padding: 0 12px;
-        font-size: 13px;
-    }
-    
-    .username {
-        display: none;
-    }
-    
-    .menu-toggle {
-        display: flex;
-    }
-    
-    .navbar-nav {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: var(--background);
-        flex-direction: column;
-        height: auto;
-        box-shadow: var(--shadow);
-        border-radius: 0 0 8px 8px;
-        padding: 10px 0;
-        transform: translateY(-10px);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 9;
-    }
-    
-    .navbar-nav.active {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    .nav-item {
-        width: 100%;
-        height: auto;
-    }
-    
-    .nav-link {
-        height: 50px;
-        padding: 0 20px;
-        width: 100%;
-    }
-    
-    .navbar-actions {
-        margin-left: auto;
-    }
+.auth-form {
+    flex: 1;
 }
 
-@media (max-width: 576px) {
-    body {
-        padding: 10px;
-    }
-    
-    .navbar {
-        padding: 0 10px;
-    }
-    
-    .navbar-actions {
-        gap: 8px;
-    }
-    
-    .icon-button {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .user-profile {
-        padding: 4px 8px;
-    }
-    
-    .avatar {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
+.form-group {
+    margin-bottom: 20px;
 }
 
-@media (max-width: 400px) {
-    .icon-button:nth-child(1) {
-        display: none;
-    }
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 14px;
 }
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.forgot-password {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid var(--border-color);
+}
+
+.auth-switch-text {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.auth-switch-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.auth-switch-link:hover {
+    text-decoration: underline;
+}
+
+/* Sección de Bienvenida */

@@ -1,44 +1,279 @@
-<script>
+<script lang="ts">
 	//import { page } from '$app/state';
 	//import logo from '$lib/images/svelte-logo.svg';
 	//import github from '$lib/images/github.svg';
     import '$lib/style/navbar.css';
+    
+    let authPanelOpen: boolean = false;
+    let authType: 'login' | 'register' = 'login';
+    
+    function openAuthPanel(type: 'login' | 'register'): void {
+        authType = type;
+        authPanelOpen = true;
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeAuthPanel(): void {
+        authPanelOpen = false;
+        document.body.style.overflow = 'auto';
+    }
+    
+    function switchAuthType(type: 'login' | 'register'): void {
+        authType = type;
+    }
+    
+    function handleAuthSubmit(event: Event): void {
+        event.preventDefault();
+        alert(`Formulario de ${authType} enviado correctamente`);
+        closeAuthPanel();
+    }
+    
+    function handleKeydown(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            closeAuthPanel();
+        }
+    }
+    
+    function handleOverlayKeydown(event: KeyboardEvent): void {
+        if (event.key === 'Enter' || event.key === ' ') {
+            closeAuthPanel();
+        }
+    }
+    
+    function handleAuthLinkKeydown(event: KeyboardEvent, type: 'login' | 'register'): void {
+        if (event.key === 'Enter' || event.key === ' ') {
+            switchAuthType(type);
+        }
+    }
 </script>
+
+<svelte:head>
+	<title>Learn.py</title>
+	<meta name="description" content="Learn.py" />
+</svelte:head>
+
 <nav class="navbar">
+    <!--<meta http-equiv="refresh" content="0; url=https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1">-->
+
         <div class="navbar-brand">
-            <div class="logo">E</div>
+            <div class="logo">L</div>
             <span class="brand-name">Learn.py</span>
         </div>
         
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a href="/" class="nav-link">Inicio</a>
+                <a href="/" class="nav-link active">Inicio</a>
             </li>
             <li class="nav-item">
                 <a href="/about" class="nav-link">Sobre nosotros</a>
             </li>
             <li class="nav-item">
-                <a href="/sverdle" class="nav-link-active">Entrar</a>
+                <a href="/sverdle" class="nav-link">Entrar</a>
             </li>
         </ul>
         
         <div class="navbar-actions">
-            <div class="icon-button">
+            <div class="auth-buttons">
+                <button 
+                    type="button" 
+                    class="auth-btn btn-login" 
+                    on:click={() => openAuthPanel('login')}
+                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('login')}
+                >
+                    Iniciar Sesión
+                </button>
+                <button 
+                    type="button" 
+                    class="auth-btn btn-register" 
+                    on:click={() => openAuthPanel('register')}
+                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('register')}
+                >
+                    Registrarse
+                </button>
+            </div>
+            
+            <button 
+                type="button" 
+                class="icon-button"
+                aria-label="Buscar"
+            >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="currentColor"/>
                 </svg>
-            </div>
-            <div class="icon-button">
+            </button>
+            <button 
+                type="button" 
+                class="icon-button"
+                aria-label="Notificaciones"
+            >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
                 </svg>
-            </div>
-            <div class="user-profile">
+            </button>
+            <button 
+                type="button" 
+                class="user-profile"
+                aria-label="Perfil de usuario"
+            >
                 <div class="avatar">JD</div>
                 <span class="username">Juan Díaz</span>
-            </div>
+            </button>
         </div>
     </nav>
+
+<!-- Panel de Login/Register -->
+<div 
+    class="auth-panel {authPanelOpen ? 'active' : ''}"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="auth-title"
+    tabindex="0"
+    on:keydown={handleKeydown}
+>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2 class="auth-title" id="auth-title">
+                {authType === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            </h2>
+            <button 
+                type="button"
+                class="close-auth" 
+                on:click={closeAuthPanel}
+                on:keydown={(e) => e.key === 'Enter' && closeAuthPanel()}
+                aria-label="Cerrar panel de autenticación"
+            >
+                ×
+            </button>
+        </div>
+        
+        <form class="auth-form" on:submit={handleAuthSubmit}>
+            {#if authType === 'login'}
+                <div>
+                    <div class="form-group">
+                        <label for="login-email" class="form-label">Email</label>
+                        <input 
+                            id="login-email"
+                            type="email" 
+                            class="form-input" 
+                            placeholder="tu@email.com" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password" class="form-label">Contraseña</label>
+                        <input 
+                            id="login-password"
+                            type="password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" /> Recordarme
+                        </label>
+                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                    
+                    <div class="auth-switch">
+                        <span class="auth-switch-text">¿No tienes una cuenta? </span>
+                        <button 
+                            type="button"
+                            class="auth-switch-link" 
+                            on:click={() => switchAuthType('register')}
+                            on:keydown={(e) => handleAuthLinkKeydown(e, 'register')}
+                        >
+                            Regístrate aquí
+                        </button>
+                    </div>
+                </div>
+            {:else}
+                <div>
+                    <div class="form-group">
+                        <label for="register-name" class="form-label">Nombre Completo</label>
+                        <input 
+                            id="register-name"
+                            type="text" 
+                            class="form-input" 
+                            placeholder="Juan Pérez" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-email" class="form-label">Email</label>
+                        <input 
+                            id="register-email"
+                            type="email" 
+                            class="form-input" 
+                            placeholder="tu@email.com" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-password" class="form-label">Contraseña</label>
+                        <input 
+                            id="register-password"
+                            type="password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-confirm" class="form-label">Confirmar Contraseña</label>
+                        <input 
+                            id="register-confirm"
+                            type="password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required
+                        />
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" required /> Acepto los términos y condiciones
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Crear Cuenta</button>
+                    
+                    <div class="auth-switch">
+                        <span class="auth-switch-text">¿Ya tienes una cuenta? </span>
+                        <button 
+                            type="button"
+                            class="auth-switch-link" 
+                            on:click={() => switchAuthType('login')}
+                            on:keydown={(e) => handleAuthLinkKeydown(e, 'login')}
+                        >
+                            Inicia sesión aquí
+                        </button>
+                    </div>
+                </div>
+            {/if}
+        </form>
+    </div>
+</div>
+
+<div 
+    class="auth-overlay {authPanelOpen ? 'active' : ''}" 
+    on:click={closeAuthPanel}
+    on:keydown={handleOverlayKeydown}
+    role="button"
+    tabindex="0"
+    aria-label="Cerrar panel de autenticación"
+></div>
+
+
+
 <!--
 <header>
 	<div class="corner">
