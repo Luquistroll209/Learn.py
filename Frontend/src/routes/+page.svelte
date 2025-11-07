@@ -66,8 +66,8 @@
                     <span>Django</span>
                 </div>
                 <div class="tech-icon">
-                    <div class="icon">R</div>
-                    <span>React</span>
+                    <div class="icon">S</div>
+                    <span>Svelte</span>
                 </div>
                 <div class="tech-icon">
                     <div class="icon">S</div>

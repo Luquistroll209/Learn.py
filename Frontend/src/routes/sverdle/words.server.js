@@ -1,5 +1,6 @@
 /** The list of possible words */
 export const words = [
+	'nigga',
 	'aback',
 	'abase',
 	'abate',

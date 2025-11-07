@@ -18,15 +18,23 @@ class RegisterView(APIView):
             return Response({'token': token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 class LoginView(APIView):
     def post(self, request):
         # Obtención del nombre de usuario y contraseña
-        name = request.data.get('name')
+        email = request.data.get('email')
         password = request.data.get('password')
-        # Autentificación del usuario - usa 'username' internamente pero 'name' en la API
-        user = authenticate(username=name, password=password)  # Internamente usa username
-
-        # Revisa si es válido y manda los diferentes status, si está OK manda también el token
+        
+        # Buscar usuario por email
+        try:
+            user_by_email = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'Error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Autentificarse
+        user = authenticate(username=user_by_email.username, password=password)
+        
+        #Revisa si es valido
         if user:
             token, _ = Token.objects.get_or_create(user=user)
             return Response({'token': token.key}, status=status.HTTP_200_OK)

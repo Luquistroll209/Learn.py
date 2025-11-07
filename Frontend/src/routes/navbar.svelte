@@ -3,6 +3,8 @@
 	//import logo from '$lib/images/svelte-logo.svg';
 	//import github from '$lib/images/github.svg';
     import '$lib/style/navbar.css';
+    import { urlip } from '$lib/config';
+
     
     let authPanelOpen: boolean = false;
     let authType: 'login' | 'register' = 'login';
@@ -22,10 +24,88 @@
         authType = type;
     }
     
-    function handleAuthSubmit(event: Event): void {
+    async function handleAuthSubmit(event: Event): Promise<void> {
         event.preventDefault();
-        alert(`Formulario de ${authType} enviado correctamente`);
-        closeAuthPanel();
+        const form = event.target as HTMLFormElement;
+        
+        if (authType === 'login'){
+            //Obetener el email y el password del panel de login
+            //TENGO QUE REVISAR ESTO
+            const email = (form.querySelector('#login-email') as HTMLInputElement).value;
+            const password = (form.querySelector('#login-password') as HTMLInputElement).value;
+            
+            try{
+                //el response (lo que le manda a la api el mensaje)
+                const respose = await fetch(`${urlip}users/login/`, {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json' //cords
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                    })
+                });
+
+                const data = await respose.json();
+                if (respose.ok){
+                    //Esto no se si funciona tengo que comprobarlo
+                    //guarda el token del usuario en el localStorage
+                    localStorage.setItem('token', data.token || '')
+                    closeAuthPanel();
+                }else{
+                    console.error(`Error: ${data.detail || 'credenciales errorenas'}`)
+                }
+            } catch(error){
+                console.error('error al conectarse con la API', error)
+                //HACER MI PROPIO ALERT EN UN MODULO COMPARTIDO
+            }
+        } else {
+            //declaración de las variables del formulario
+            const name = (form.querySelector('#register-name') as HTMLInputElement).value;
+            const lastName = (form.querySelector('#register-last-name') as HTMLInputElement).value;
+            const email = (form.querySelector('#register-email') as HTMLInputElement).value;
+            const password = (form.querySelector('#register-password') as HTMLInputElement).value;
+            const confirm = (form.querySelector('#register-confirm') as HTMLInputElement).value;
+
+            if (password != confirm){
+                alert("Las contraseñas no coinciden");
+                //hacer mi propio sistema de alertas
+                return;
+            }
+
+            try{
+                const response = await fetch(`${urlip}users/register/`, {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json' //cords
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password,
+                        last_name: lastName
+                    })
+
+                    
+                });
+                const data = await response.json();
+
+                
+                if (response.ok) {
+                    //Hacer propio sistema de alertas
+                    alert('Cuenta creada correctamente');
+                    switchAuthType('login');
+                } else {
+                    alert(`Error: ${data.detail || 'No se pudo crear la cuenta'}`);
+                }
+            } catch(error){
+                console.error(error)
+            }
+        }
+        
     }
     
     function handleKeydown(event: KeyboardEvent): void {
@@ -74,22 +154,14 @@
         
         <div class="navbar-actions">
             <div class="auth-buttons">
-                <button 
-                    type="button" 
-                    class="auth-btn btn-login" 
+                <button type="button" class="auth-btn btn-login" 
                     on:click={() => openAuthPanel('login')}
-                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('login')}
-                >
-                    Iniciar Sesión
-                </button>
+                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('login')}>Iniciar Sesión</button>
                 <button 
                     type="button" 
                     class="auth-btn btn-register" 
                     on:click={() => openAuthPanel('register')}
-                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('register')}
-                >
-                    Registrarse
-                </button>
+                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('register')}>Registrarse</button>
             </div>
             
             <button 
@@ -151,13 +223,7 @@
                 <div>
                     <div class="form-group">
                         <label for="login-email" class="form-label">Email</label>
-                        <input 
-                            id="login-email"
-                            type="email" 
-                            class="form-input" 
-                            placeholder="tu@email.com" 
-                            required
-                        />
+                        <input id="login-email" type="email" class="form-input" placeholder="Ej: tu@email.com" required/>
                     </div>
                     
                     <div class="form-group">
@@ -195,25 +261,16 @@
             {:else}
                 <div>
                     <div class="form-group">
-                        <label for="register-name" class="form-label">Nombre Completo</label>
-                        <input 
-                            id="register-name"
-                            type="text" 
-                            class="form-input" 
-                            placeholder="Juan Pérez" 
-                            required
-                        />
+                        <label for="register-name" class="form-label">Nombre</label>
+                        <input id="register-name" type="text" class="form-input" placeholder="Ej: Juan" required/>
                     </div>
-                    
+                    <div class="form-group">
+                        <label for="register-name" class="form-label">apellido</label>
+                        <input id="register-last-name" type="text" class="form-input" placeholder="Ej: Pérez" required/>
+                    </div>
                     <div class="form-group">
                         <label for="register-email" class="form-label">Email</label>
-                        <input 
-                            id="register-email"
-                            type="email" 
-                            class="form-input" 
-                            placeholder="tu@email.com" 
-                            required
-                        />
+                        <input  id="register-email" type="email"  class="form-input"  placeholder="Ej: tu@email.com" required/>
                     </div>
                     
                     <div class="form-group">
