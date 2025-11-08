@@ -34,10 +34,12 @@ class LoginView(APIView):
         # Autentificarse
         user = authenticate(username=user_by_email.username, password=password)
         
+        
         #Revisa si es valido
         if user:
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+            #Me acabo de dar cuenta de que el username esta mal, deberia ser name, pero ya lo arreglare en un futuro
+            return Response({'token': token.key, 'name': user.username, 'last_name': user.last_name}, status=status.HTTP_200_OK)
         return Response({'Error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class userNameInfo(APIView): 

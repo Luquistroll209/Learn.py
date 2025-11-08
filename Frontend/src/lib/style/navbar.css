@@ -47,7 +47,7 @@ body {
 }
 
 .logo {
-    width: 45px;
+    padding: 20px;
     height: 45px;
     display: flex;
     align-items: center;
@@ -59,7 +59,13 @@ body {
     font-size: 20px;
     box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
 }
-
+.Github{
+    width: 40px;
+    transition: 0.5s;
+}
+.Github:hover{
+    transform: scale(120%);
+}
 .brand-name {
     font-size: 22px;
     font-weight: 600;
