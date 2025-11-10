@@ -1,0 +1,21 @@
+.AlertModule{
+    background-color: rgba(0, 0, 0, 0.717);
+
+    color: white;
+    border-left: 8px solid rgba(255, 8, 0, 0.645);
+    position: absolute;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    border-radius: 0px 10px 10px 0px;
+    padding: 10px;
+    /*right: 60px;*/
+    right: -400px;
+    top: 40px;
+    scale: 120%;
+    transition: 3s;
+}
+
+.AlertModule h2{
+    font-size: 160%;
+}
+.AlertModule p{font-size: 130%;}

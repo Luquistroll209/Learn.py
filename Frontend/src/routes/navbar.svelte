@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { browser } from '$app/environment';
 	//import { page } from '$app/state';
 	//import logo from '$lib/images/svelte-logo.svg';
 	import github from '$lib/images/github.svg';
@@ -6,13 +7,50 @@
     import { urlip } from '$lib/config';
     import { onMount } from 'svelte';
 
+    //modulos
+    import AlertModule from './modules/alert.svelte';
+
     let islogged = false;
     let username = "";
     let userInitials = "";
 
     let authPanelOpen: boolean = false;
     let authType: 'login' | 'register' = 'login';
-    
+
+
+    function alerts(title, description, color) {
+        if (!browser) return; // evita ejecución en el servidor
+
+        const titleDiv = document.getElementById("ErrorTitle");
+        const descDiv = document.getElementById("ErrorDescription");
+        const AlertModule = document.getElementById("AlertModule");
+
+        if (descDiv) {
+            descDiv.innerHTML = description;
+        }
+        if (titleDiv && AlertModule) {
+            titleDiv.innerHTML = title;
+            switch (color){
+                case "error":
+                    AlertModule.style.borderLeftColor = "red"; 
+                case "warning":
+                    AlertModule.style.borderLeftColor = "yellow"; 
+                case "anoucement":
+                    AlertModule.style.borderLeftColor = "blue"; 
+
+            }
+            //NO FUNCA LOS COLORESSSS
+            AlertModule.style.right = "60px";
+        }
+
+
+
+    }
+
+    // ejemplo de uso Para el futuro
+    alerts("Error", "Tomas fue baneado de la vida", "error");
+
+
     function checkAuthStatus(){
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('userData');
@@ -167,10 +205,10 @@
 	<title>Learn.py</title>
 	<meta name="description" content="Learn.py" />
 </svelte:head>
-
+<AlertModule />
 <nav class="navbar">
     <!--<meta http-equiv="refresh" content="0; url=https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1">-->
-
+        
         <div class="navbar-brand">
             <div class="logo">Learn.py</div>
             <a href="https://github.com/Luquistroll209/Learn.py"><img class="Github" src={github} alt="GitHub" /></a>
