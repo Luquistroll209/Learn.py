@@ -7,8 +7,10 @@
     import { urlip } from '$lib/config';
     import { onMount } from 'svelte';
 
-    //modulos
-    import AlertModule from './modules/alert.svelte';
+    //componentes
+    import { showAlert } from '$lib/store/alertStore.js';
+    import Alert from '$lib/components/Alert.svelte';
+
 
     let islogged = false;
     let username = "";
@@ -18,38 +20,8 @@
     let authType: 'login' | 'register' = 'login';
 
 
-    function alerts(title, description, color) {
-        if (!browser) return; // evita ejecución en el servidor
 
-        const titleDiv = document.getElementById("ErrorTitle");
-        const descDiv = document.getElementById("ErrorDescription");
-        const AlertModule = document.getElementById("AlertModule");
-
-        if (descDiv) {
-            descDiv.innerHTML = description;
-        }
-        if (titleDiv && AlertModule) {
-            titleDiv.innerHTML = title;
-            switch (color){
-                case "error":
-                    AlertModule.style.borderLeftColor = "red"; 
-                case "warning":
-                    AlertModule.style.borderLeftColor = "yellow"; 
-                case "anoucement":
-                    AlertModule.style.borderLeftColor = "blue"; 
-
-            }
-            //NO FUNCA LOS COLORESSSS
-            AlertModule.style.right = "60px";
-        }
-
-
-
-    }
-
-    // ejemplo de uso Para el futuro
-    alerts("Error", "Tomas fue baneado de la vida", "error");
-
+    
 
     function checkAuthStatus(){
         const token = localStorage.getItem('token');
@@ -87,6 +59,7 @@
     function switchAuthType(type: 'login' | 'register'): void {
         authType = type;
     }
+    
     
     async function handleAuthSubmit(event: Event): Promise<void> {
         event.preventDefault();
@@ -129,11 +102,10 @@
                         
                     closeAuthPanel();
                 }else{
-                    console.error(`Error: ${data.detail || 'credenciales errorenas'}`)
+                    showAlert("Error", "Credenciales erroneas", "red");
                 }
             } catch(error){
-                console.error('error al conectarse con la API', error)
-                //HACER MI PROPIO ALERT EN UN MODULO COMPARTIDO
+                showAlert("Error", "No es posible conectarse con la base de datos", "red");
             }
         } else {
             //declaración de las variables del formulario
@@ -144,8 +116,7 @@
             const confirm = (form.querySelector('#register-confirm') as HTMLInputElement).value;
 
             if (password != confirm){
-                alert("Las contraseñas no coinciden");
-                //hacer mi propio sistema de alertas
+                showAlert("Error", "Las contraseñas no coinciden", "red");
                 return;
             }
 
@@ -169,11 +140,11 @@
 
                 
                 if (response.ok) {
-                    //Hacer propio sistema de alertas
-                    alert('Cuenta creada correctamente');
+                    showAlert("Exito", "Cuenta creada correctamente", "blue");
                     switchAuthType('login');
                 } else {
-                    alert(`Error: ${data.detail || 'No se pudo crear la cuenta'}`);
+                    showAlert("Error", `${data.detail || 'No se pudo crear la cuenta'}`, "red");
+
                 }
             } catch(error){
                 console.error(error)
@@ -205,7 +176,7 @@
 	<title>Learn.py</title>
 	<meta name="description" content="Learn.py" />
 </svelte:head>
-<AlertModule />
+<Alert />
 <nav class="navbar">
     <!--<meta http-equiv="refresh" content="0; url=https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1">-->
         

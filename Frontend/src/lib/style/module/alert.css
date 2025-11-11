@@ -11,8 +11,7 @@
     /*right: 60px;*/
     right: -400px;
     top: 40px;
-    scale: 120%;
-    transition: 3s;
+    transition: 1s;
 }
 
 .AlertModule h2{
