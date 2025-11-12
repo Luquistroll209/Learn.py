@@ -1,4 +1,4 @@
-// src/lib/stores/alertStore.js
+
 import { writable } from 'svelte/store';
 
 export const alertStore = writable({

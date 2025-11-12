@@ -9,9 +9,9 @@
 
     //componentes
     import { showAlert } from '$lib/store/alertStore.js';
-    import Alert from '$lib/components/Alert.svelte';
+    import Alert from '$lib/components/alert.svelte';
 
-    import { authPanelTrigger } from '$lib/store/authPanelStore.ts';
+    import { authPanelTrigger } from '$lib/store/authPanelStore';
 
 
     let islogged = false;
@@ -26,6 +26,7 @@
 
     //para abrir el login y entra en zonas que necesita login, vuelve al inicio y pide login
     onMount(() => {
+        checkAuthStatus(); // <- DESCOMENTA ESTO
         const unsubscribe = authPanelTrigger.subscribe((type) => {
             if (type) {
                 openAuthPanel(type);
@@ -37,21 +38,28 @@
     });
 
 
-    function checkAuthStatus(){
+    function checkAuthStatus() {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('userData');
 
         islogged = !!token;
         
-        if (userData){
-            try{
-                
+        if (userData) {
+            try {
                 const user = JSON.parse(userData);
                 username = `${user.name} ${user.last_name}`;
                 userInitials = `${user.name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase();
-            }catch(error){
-                console.log("error: ", error)
+            } catch(error) {
+
+                console.log("error: ", error);
+                localStorage.removeItem('userData');
+                localStorage.removeItem('token');
+                islogged = false;
             }
+        } else {
+            islogged = false;
+            username = "";
+            userInitials = "";
         }
     }
     
