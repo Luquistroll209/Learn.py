@@ -24,7 +24,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Navbar */
 .navbar {
     display: flex;
     align-items: center;
@@ -59,13 +58,16 @@ body {
     font-size: 20px;
     box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
 }
-.Github{
+
+.Github {
     width: 40px;
     transition: 0.5s;
 }
-.Github:hover{
+
+.Github:hover {
     transform: scale(120%);
 }
+
 .brand-name {
     font-size: 22px;
     font-weight: 600;
@@ -239,7 +241,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Panel de Login/Register */
 .auth-panel {
     position: fixed;
     top: 0;
@@ -431,9 +432,227 @@ body {
     color: var(--text-color);
     cursor: pointer;
     transition: background 0.2s;
+    text-decoration: none;
+    display: block;
 }
 
 .user-menu-item:hover {
     background-color: var(--background-hover);
 }
 
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 0 16px;
+    }
+
+    .navbar-nav {
+        gap: 2px;
+    }
+
+    .nav-link {
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    .icon-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .Github {
+        width: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 12px;
+        height: 60px;
+        border-radius: 0;
+    }
+
+    .logo {
+        height: 40px;
+        padding: 15px;
+        font-size: 18px;
+    }
+
+    .Github {
+        width: 28px;
+    }
+
+    .navbar-nav {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - 60px);
+        background-color: var(--background);
+        flex-direction: column;
+        padding: 20px 0;
+        box-shadow: var(--shadow-heavy);
+        transition: left 0.3s ease;
+        gap: 0;
+        overflow-y: auto;
+    }
+
+    .navbar-nav.active {
+        left: 0;
+    }
+
+    .nav-item {
+        width: 100%;
+        height: auto;
+    }
+
+    .nav-link {
+        width: 100%;
+        height: auto;
+        padding: 16px 24px;
+        border-radius: 0;
+        justify-content: flex-start;
+    }
+
+    .nav-link.active::after {
+        display: none;
+    }
+
+    .nav-link.active {
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .navbar-actions {
+        gap: 8px;
+    }
+
+    .auth-buttons {
+        gap: 6px;
+    }
+
+    .auth-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .btn-login {
+        display: none;
+    }
+
+    .user-profile {
+        padding: 6px 10px;
+    }
+
+    .username {
+        display: none;
+    }
+
+    .icon-button {
+        width: 36px;
+        height: 36px;
+        display: none;
+    }
+
+    .user-menu {
+        top: 55px;
+        right: 10px;
+        min-width: 200px;
+    }
+
+    .auth-panel {
+        width: 100%;
+        left: -100%;
+    }
+
+    .auth-container {
+        padding: 30px 20px;
+    }
+
+    .auth-title {
+        font-size: 20px;
+    }
+
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0 8px;
+    }
+
+    .navbar-brand {
+        gap: 8px;
+    }
+
+    .logo {
+        padding: 12px;
+        font-size: 16px;
+        height: 36px;
+    }
+
+    .Github {
+        width: 24px;
+    }
+
+    .auth-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .user-profile {
+        padding: 4px 8px;
+    }
+
+    .auth-container {
+        padding: 20px 16px;
+    }
+
+    .form-input {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .btn-submit {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .auth-switch {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 360px) {
+    .logo {
+        padding: 10px;
+        font-size: 14px;
+        height: 32px;
+    }
+
+    .Github {
+        width: 20px;
+    }
+
+    .auth-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+
+    .navbar-nav {
+        width: 100%;
+    }
+}

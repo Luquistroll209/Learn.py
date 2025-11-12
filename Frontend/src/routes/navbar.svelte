@@ -20,20 +20,26 @@
 
     let authPanelOpen: boolean = false;
     let authType: 'login' | 'register' = 'login';
-
-
+    let mobileMenuOpen = false;
     let userMenuOpen = false;
 
+    //Detectar si es un movil o no para ajustar toda la interfaz
+    let isSmallscreen = false
+
+    if (browser) {
+        isSmallscreen = window.innerWidth <= 1260;
+        console.log('Es pantalla pequeña:', isSmallscreen);
+    }
     //para abrir el login y entra en zonas que necesita login, vuelve al inicio y pide login
+    // ESTO NO FUNCIOJNA TENGO QUE ARREGLARLO
     onMount(() => {
-        checkAuthStatus(); // <- DESCOMENTA ESTO
+        checkAuthStatus();
         const unsubscribe = authPanelTrigger.subscribe((type) => {
             if (type) {
                 openAuthPanel(type);
                 authPanelTrigger.set(null);
             }
         });
-
         return unsubscribe;
     });
 
@@ -70,6 +76,7 @@
     function openAuthPanel(type: 'login' | 'register'): void {
         authType = type;
         authPanelOpen = true;
+        mobileMenuOpen = false;
         document.body.style.overflow = 'hidden';
     }
     
@@ -82,7 +89,19 @@
         authType = type;
     }
     
-    
+        function toggleMobileMenu(): void {
+        mobileMenuOpen = !mobileMenuOpen;
+        if (mobileMenuOpen) {
+            userMenuOpen = false;
+        }
+    }
+
+    function closeMobileMenu(): void {
+        mobileMenuOpen = false;
+    }
+    function handleNavLinkClick(): void {
+        closeMobileMenu();
+    }
     async function handleAuthSubmit(event: Event): Promise<void> {
         event.preventDefault();
         const form = event.target as HTMLFormElement;
@@ -207,88 +226,118 @@
 </svelte:head>
 <Alert />
 <nav class="navbar">
-    <!--<meta http-equiv="refresh" content="0; url=https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1">-->
-        
-        <div class="navbar-brand">
-            <div class="logo">Learn.py</div>
-            <a href="https://github.com/Luquistroll209/Learn.py"><img class="Github" src={github} alt="GitHub" /></a>
-        </div>
-        
-        <ul class="navbar-nav">
+    <div class="navbar-brand">
+        <div class="logo">Learn.py</div>
+        <a href="https://github.com/Luquistroll209/Learn.py" class="github-link">
+            <img class="Github" src={github} alt="GitHub" />
+        </a>
+    </div>
+    
+    <ul class="navbar-nav {mobileMenuOpen ? 'active' : ''}">
+        <li class="nav-item">
+            <a href="/" class="nav-link active" on:click={handleNavLinkClick}>Inicio</a>
+        </li>
+        <li class="nav-item">
+            <a href="/about" class="nav-link" on:click={handleNavLinkClick}>Sobre nosotros</a>
+        </li>
+        <li class="nav-item">
+            <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Clases</a>
+        </li>
+        {#if islogged} 
             <li class="nav-item">
-                <a href="/" class="nav-link active">Inicio</a>
+                <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Tareas</a>
             </li>
-            <li class="nav-item">
-                <a href="/about" class="nav-link">Sobre nosotros</a>
-            </li>
-            <li class="nav-item">
-                <a href="/clases/" class="nav-link">Clases</a>
-            </li>
-            {#if islogged} 
-                <li class="nav-item">
-                    <a href="/clases/" class="nav-link">Tareas</a>
-                </li>        
-            {/if}
-        </ul>
-        
-        <div class="navbar-actions">
-            <!--Comprueba si esta logeado o no para mostrar el login o el usuario-->
-            {#if islogged}    
-                <button 
-                    type="button" 
-                    class="icon-button"
-                    aria-label="Buscar"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="">
-                        <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button 
-                    type="button" 
-                    class="icon-button"
-                    aria-label="Notificaciones"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="">
-                        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button 
-                    type="button" 
-                    class="user-profile"
-                    aria-label="Perfil de usuario"
-                    on:click="{toggleUserMenu}"
-                >
-                    <div class="avatar">{userInitials}</div>
-                    <span class="username">{username}</span>
-                </button>
-                
-                {#if userMenuOpen}
-                    <div class="user-menu"  role="menu" tabindex="0"  on:mouseleave={closeUserMenu}>
-                        <button class="user-menu-item">Ajustes de perfil</button>
-                        <a class="user-menu-item" href="/clases/">Mis clases</a>
-                        <button class="user-menu-item" on:click={() => {
-                            localStorage.clear();
-                            islogged = false;
-                            closeUserMenu();
-                        }}>Cerrar sesión</button>
-                    </div>
-                {/if}
-
-            {:else}
+        {:else}
+            {#if isSmallscreen == false}
                 <div class="auth-buttons">
-                <button type="button" class="auth-btn btn-login" 
-                    on:click={() => openAuthPanel('login')}
-                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('login')}>Iniciar Sesión</button>
-                <button 
-                    type="button" 
-                    class="auth-btn btn-register" 
-                    on:click={() => openAuthPanel('register')}
-                    on:keydown={(e) => e.key === 'Enter' && openAuthPanel('register')}>Registrarse</button>
+                    <button type="button" class="auth-btn btn-login" 
+                        on:click={() => openAuthPanel('login')}>
+                        Iniciar Sesión
+                    </button>
+                    <button 
+                        type="button" 
+                        class="auth-btn btn-register" 
+                        on:click={() => openAuthPanel('register')}>
+                        Registrarse
+                    </button>
                 </div>
             {/if}
-        </div>
+        {/if}
+    </ul>
+    
+    <div class="navbar-actions">
+        {#if islogged}    
+            <button 
+                type="button" 
+                class="icon-button desktop-only"
+                aria-label="Buscar"
+            >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="currentColor"/>
+                </svg>
+            </button>
+            <button 
+                type="button" 
+                class="icon-button desktop-only"
+                aria-label="Notificaciones"
+            >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
+                </svg>
+            </button>
+            <button 
+                type="button" 
+                class="user-profile"
+                aria-label="Perfil de usuario"
+                on:click={toggleUserMenu}
+            >
+                <div class="avatar">{userInitials}</div>
+                <span class="username">{username}</span>
+            </button>
+            
+            {#if userMenuOpen}
+                <div class="user-menu" role="menu" tabindex="0" on:mouseleave={closeUserMenu}>
+                    <button class="user-menu-item">Ajustes de perfil</button>
+                    <a class="user-menu-item" href="/clases/">Mis clases</a>
+                    <button class="user-menu-item" on:click={() => {
+                        localStorage.clear();
+                        islogged = false;
+                        closeUserMenu();
+                    }}>Cerrar sesión</button>
+                </div>
+            {/if}
+        {:else}
+            {#if isSmallscreen}
+                <div class="auth-buttons">
+                    <button type="button" class="auth-btn btn-login" 
+                        on:click={() => openAuthPanel('login')}>
+                        Iniciar Sesión
+                    </button>
+                    <button 
+                        type="button" 
+                        class="auth-btn btn-register" 
+                        on:click={() => openAuthPanel('register')}>
+                        Registrarse
+                    </button>
+                </div>
+            {/if}
+        {/if}
         
-    </nav>
+        <!-- Botón hamburguesa -->
+        <button 
+            type="button"
+            class="menu-toggle"
+            class:active={mobileMenuOpen}
+            on:click={toggleMobileMenu}
+            aria-label="Menú"
+            aria-expanded={mobileMenuOpen}
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</nav>
 
 <!-- Panel de Login/Register -->
 <div 
@@ -338,6 +387,7 @@
                         <label class="remember-me">
                             <input type="checkbox" /> Recordarme
                         </label>
+                        <!--Cosas que tengo que terminar-->
                         <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
                     </div>
                     
