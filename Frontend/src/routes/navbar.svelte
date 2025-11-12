@@ -20,7 +20,7 @@
     let authType: 'login' | 'register' = 'login';
 
 
-
+    let userMenuOpen = false;
     
 
     function checkAuthStatus(){
@@ -170,6 +170,13 @@
             switchAuthType(type);
         }
     }
+    function toggleUserMenu(): void {
+        userMenuOpen = !userMenuOpen;
+    }
+
+    function closeUserMenu(): void {
+        userMenuOpen = false;
+    }
 </script>
 
 <svelte:head>
@@ -192,9 +199,14 @@
             <li class="nav-item">
                 <a href="/about" class="nav-link">Sobre nosotros</a>
             </li>
+            {#if islogged} 
             <li class="nav-item">
-                <a href="/sverdle" class="nav-link">Entrar</a>
+                <a href="/clases/" class="nav-link">Clases</a>
             </li>
+            <li class="nav-item">
+                <a href="/clases/" class="nav-link">Tareas</a>
+            </li>        
+            {/if}
         </ul>
         
         <div class="navbar-actions">
@@ -222,10 +234,24 @@
                     type="button" 
                     class="user-profile"
                     aria-label="Perfil de usuario"
+                    on:click="{toggleUserMenu}"
                 >
                     <div class="avatar">{userInitials}</div>
                     <span class="username">{username}</span>
                 </button>
+                
+                {#if userMenuOpen}
+                    <div class="user-menu"  role="menu" tabindex="0"  on:mouseleave={closeUserMenu}>
+                        <button class="user-menu-item">Ajustes de perfil</button>
+                        <a class="user-menu-item" href="/clases/">Mis clases</a>
+                        <button class="user-menu-item" on:click={() => {
+                            localStorage.clear();
+                            islogged = false;
+                            closeUserMenu();
+                        }}>Cerrar sesión</button>
+                    </div>
+                {/if}
+
             {:else}
                 <div class="auth-buttons">
                 <button type="button" class="auth-btn btn-login" 
@@ -239,6 +265,7 @@
                 </div>
             {/if}
         </div>
+        
     </nav>
 
 <!-- Panel de Login/Register -->
