@@ -11,6 +11,8 @@
     import { showAlert } from '$lib/store/alertStore.js';
     import Alert from '$lib/components/Alert.svelte';
 
+    import { authPanelTrigger } from '$lib/store/authPanelStore.ts';
+
 
     let islogged = false;
     let username = "";
@@ -21,7 +23,19 @@
 
 
     let userMenuOpen = false;
-    
+
+    //para abrir el login y entra en zonas que necesita login, vuelve al inicio y pide login
+    onMount(() => {
+        const unsubscribe = authPanelTrigger.subscribe((type) => {
+            if (type) {
+                openAuthPanel(type);
+                authPanelTrigger.set(null);
+            }
+        });
+
+        return unsubscribe;
+    });
+
 
     function checkAuthStatus(){
         const token = localStorage.getItem('token');
@@ -41,9 +55,9 @@
         }
     }
     
-    onMount(() => {
-        checkAuthStatus();
-    });
+    //onMount(() => {
+      //  checkAuthStatus();
+    //});
     
     function openAuthPanel(type: 'login' | 'register'): void {
         authType = type;
@@ -199,13 +213,13 @@
             <li class="nav-item">
                 <a href="/about" class="nav-link">Sobre nosotros</a>
             </li>
-            {#if islogged} 
             <li class="nav-item">
                 <a href="/clases/" class="nav-link">Clases</a>
             </li>
-            <li class="nav-item">
-                <a href="/clases/" class="nav-link">Tareas</a>
-            </li>        
+            {#if islogged} 
+                <li class="nav-item">
+                    <a href="/clases/" class="nav-link">Tareas</a>
+                </li>        
             {/if}
         </ul>
         
