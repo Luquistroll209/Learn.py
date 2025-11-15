@@ -54,7 +54,7 @@
             </p>
             
             <div class="cta-buttons">
-                <a href="/login" class="btn btn-primary">Registrarse</a>
+                <a href="/auth?type=register" class="btn btn-primary">Registrarse</a>
             </div>
         </div>
         
@@ -80,4 +80,3 @@
             </div>
         </div>
     </section>
-

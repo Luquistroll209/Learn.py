@@ -1,6 +1,6 @@
 <script lang="ts">
     import "$lib/style/clasesCards.css"
-    //NO FUNCIONA LO DE LOGIN
+    //NO FUNCIONA LO DE LOGIN QUE TE REDIRIGE
     import type { PageLoad } from './$types';
     import { browser } from '$app/environment';
     import { authPanelTrigger } from '$lib/store/authPanelStore';

@@ -30,6 +30,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8001",
     "http://127.0.0.1:8001",
     "http://lt209.ddns.net",
+    "http://lt209.ddns.net:2000",
 ]
 
 
