@@ -1,4 +1,4 @@
-# Learn.py
+# Learn.py (En proceso de creación sin terminar)
 
 **Autor:** Lucas Karlsson López  
 **Curso:** 2ºSMR  
