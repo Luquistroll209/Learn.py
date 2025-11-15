@@ -44,7 +44,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 10;
+    z-index: 1003;
 }
 
 .logo {
@@ -60,6 +60,7 @@ body {
     font-size: 18px;
     box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
     white-space: nowrap;
+    text-decoration: none;
 }
 
 .Github {
@@ -71,15 +72,7 @@ body {
     transform: scale(1.15);
 }
 
-.brand-name {
-    font-size: 20px;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Navigation Menu */
+/* Navigation Menu - Desktop */
 .navbar-nav {
     display: flex;
     align-items: center;
@@ -177,6 +170,7 @@ body {
     box-shadow: 0 4px 10px rgba(26, 115, 232, 0.35);
 }
 
+/* User Profile */
 .user-profile {
     display: flex;
     align-items: center;
@@ -186,7 +180,7 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
     border: none;
-    background-color: #e0e0e0;
+    background: none;
 }
 
 .user-profile:hover {
@@ -239,9 +233,10 @@ body {
     width: 28px;
     height: 20px;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1003;
     border: none;
     background: none;
+    position: relative;
 }
 
 .menu-toggle span {
@@ -251,6 +246,7 @@ body {
     background-color: var(--text-color);
     border-radius: 3px;
     transition: all 0.3s ease;
+    transform-origin: center;
 }
 
 /* User Menu */
@@ -287,6 +283,22 @@ body {
     background-color: var(--background-hover);
 }
 
+/* Mobile Overlay */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+.mobile-overlay.active {
+    display: block;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 
 /* Tablet */
@@ -321,11 +333,11 @@ body {
     }
 }
 
-/* Mobile */
+/* Mobile - Menu Hamburguesa */
 @media (max-width: 768px) {
     .navbar {
-        padding: 0 12px;
-        height: 60px;
+        padding: 0 16px;
+        height: 64px;
         border-radius: 0;
         margin: 0;
         position: fixed;
@@ -336,27 +348,27 @@ body {
     }
 
     body {
-        padding-top: 60px;
+        padding-top: 64px;
     }
 
     .logo {
-        height: 38px;
-        padding: 0 16px;
-        font-size: 16px;
-        border-radius: 8px;
+        height: 40px;
+        padding: 0 18px;
+        font-size: 17px;
+        border-radius: 10px;
     }
 
     .Github {
-        width: 28px;
+        width: 30px;
     }
 
-    /* Mobile Navigation Menu */
+    /* Ocultar navegación desktop en móvil */
     .navbar-nav {
         position: fixed;
-        top: 60px;
+        top: 64px;
         left: -100%;
         width: 280px;
-        height: calc(100vh - 60px);
+        height: calc(100vh - 64px);
         background-color: var(--background);
         flex-direction: column;
         padding: 20px 0;
@@ -364,6 +376,7 @@ body {
         transition: left 0.3s ease;
         gap: 0;
         overflow-y: auto;
+        z-index: 1000;
     }
 
     .navbar-nav.active {
@@ -373,6 +386,7 @@ body {
     .nav-item {
         width: 100%;
         height: auto;
+        display: block;
     }
 
     .nav-link {
@@ -382,6 +396,8 @@ body {
         border-radius: 0;
         justify-content: flex-start;
         font-size: 16px;
+        border: none;
+        margin: 0;
     }
 
     .nav-link.active::after {
@@ -393,25 +409,56 @@ body {
         background-color: rgba(26, 115, 232, 0.06);
     }
 
+    /* Botones de auth en el menú móvil */
+    .navbar-nav .auth-buttons {
+        display: flex;
+        flex-direction: column;
+        padding: 20px 24px;
+        gap: 12px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .navbar-nav .auth-btn {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+        font-size: 15px;
+        border-radius: 25px;
+    }
+
     /* Mobile Actions */
     .menu-toggle {
         display: flex;
     }
 
+    /* Animación del botón hamburguesa */
+    .menu-toggle.active span:nth-child(1) {
+        transform: rotate(45deg) translate(6px, 6px);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(6px, -6px);
+    }
+
     .navbar-actions {
-        gap: 8px;
+        gap: 10px;
     }
 
-    .auth-buttons {
-        gap: 6px;
+    /* Ocultar elementos en móvil */
+    .desktop-only {
+        display: none !important;
     }
 
-    .auth-btn {
-        padding: 8px 14px;
-        font-size: 13px;
+    .navbar-actions .auth-buttons {
+        display: none;
     }
 
-    .btn-login {
+    .username {
         display: none;
     }
 
@@ -419,23 +466,15 @@ body {
         padding: 4px 8px;
     }
 
-    .username {
-        display: none;
-    }
-
     .avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-    }
-
-    .icon-button {
-        display: none;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
     }
 
     .user-menu {
-        top: 50px;
-        right: 8px;
+        top: 58px;
+        right: 10px;
         min-width: 180px;
     }
 }
@@ -443,11 +482,49 @@ body {
 /* Small Mobile */
 @media (max-width: 480px) {
     .navbar {
-        padding: 0 10px;
+        padding: 0 12px;
+        height: 60px;
+    }
+
+    body {
+        padding-top: 60px;
     }
 
     .navbar-brand {
-        gap: 8px;
+        gap: 10px;
+    }
+
+    .logo {
+        padding: 0 16px;
+        font-size: 16px;
+        height: 38px;
+    }
+
+    .Github {
+        width: 28px;
+    }
+
+    .navbar-nav {
+        width: 100%;
+        top: 60px;
+        height: calc(100vh - 60px);
+    }
+
+    .user-menu {
+        min-width: 160px;
+        right: 8px;
+    }
+
+    .menu-toggle {
+        width: 26px;
+        height: 18px;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+    .navbar {
+        padding: 0 10px;
     }
 
     .logo {
@@ -460,64 +537,17 @@ body {
         width: 26px;
     }
 
-    .auth-btn {
-        padding: 7px 12px;
-        font-size: 12px;
-    }
-
-    .navbar-nav {
-        width: 260px;
-    }
-
-    .user-menu {
-        min-width: 160px;
-        right: 6px;
-    }
-}
-
-/* Extra Small Mobile */
-@media (max-width: 360px) {
-    .navbar {
-        padding: 0 8px;
-    }
-
-    .logo {
-        padding: 0 12px;
-        font-size: 14px;
-        height: 34px;
-    }
-
-    .Github {
-        width: 24px;
-    }
-
-    .auth-btn {
-        padding: 6px 10px;
-        font-size: 11px;
-    }
-
-    .navbar-nav {
-        width: 100%;
-    }
-
     .user-profile {
         padding: 3px 6px;
     }
 
     .avatar {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
     }
 }
 
-/* Desktop-only elements */
 .desktop-only {
     display: flex;
-}
-
-@media (max-width: 768px) {
-    .desktop-only {
-        display: none !important;
-    }
 }

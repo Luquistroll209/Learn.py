@@ -27,7 +27,31 @@
 
     onMount(() => {
         checkAuthStatus();
+        
+        // Agregar listener para resize
+        if (browser) {
+            window.addEventListener('resize', handleResize);
+        }
+        
+        return () => {
+            if (browser) {
+                window.removeEventListener('resize', handleResize);
+            }
+        };
     });
+
+    function handleResize() {
+        if (browser) {
+            isSmallscreen = window.innerWidth <= 1260;
+            console.log('Es pantalla pequeña:', isSmallscreen);
+            
+            // Cerrar menús al cambiar tamaño de pantalla
+            if (window.innerWidth > 768) {
+                mobileMenuOpen = false;
+                document.body.style.overflow = '';
+            }
+        }
+    }
 
     function checkAuthStatus() {
         const token = localStorage.getItem('token');
@@ -58,18 +82,35 @@
         mobileMenuOpen = !mobileMenuOpen;
         if (mobileMenuOpen) {
             userMenuOpen = false;
+            if (browser) {
+                document.body.style.overflow = 'hidden';
+            }
+        } else {
+            if (browser) {
+                document.body.style.overflow = '';
+            }
         }
     }
 
     function closeMobileMenu(): void {
         mobileMenuOpen = false;
+        if (browser) {
+            document.body.style.overflow = '';
+        }
     }
+    
     function handleNavLinkClick(): void {
         closeMobileMenu();
     }
     
     function toggleUserMenu(): void {
         userMenuOpen = !userMenuOpen;
+        if (userMenuOpen) {
+            mobileMenuOpen = false;
+            if (browser) {
+                document.body.style.overflow = '';
+            }
+        }
     }
 
     function closeUserMenu(): void {
@@ -81,10 +122,15 @@
 	<title>Learn.py</title>
 	<meta name="description" content="Learn.py" />
 </svelte:head>
+
 <Alert />
+
+<!-- Overlay para móvil -->
+<div class="mobile-overlay {mobileMenuOpen ? 'active' : ''}" on:click={closeMobileMenu}></div>
+
 <nav class="navbar">
     <div class="navbar-brand">
-        <div class="logo">Learn.py</div>
+        <a href="/" class="logo">Learn.py</a>
         <a href="https://github.com/Luquistroll209/Learn.py" class="github-link">
             <img class="Github" src={github} alt="GitHub" />
         </a>
@@ -113,6 +159,16 @@
                     <a 
                         href="/auth/register"
                         class="auth-btn btn-register">
+                        Registrarse
+                    </a>
+                </div>
+            {:else}
+                <!-- Botones de auth en el menú móvil -->
+                <div class="auth-buttons mobile-auth">
+                    <a href="/auth/login" class="auth-btn btn-login" on:click={handleNavLinkClick}>
+                        Iniciar Sesión
+                    </a>
+                    <a href="/auth/register" class="auth-btn btn-register" on:click={handleNavLinkClick}>
                         Registrarse
                     </a>
                 </div>
@@ -147,7 +203,7 @@
                 on:click={toggleUserMenu}
             >
                 <div class="avatar">{userInitials}</div>
-                <span class="username">{username}</span>
+                <span class="username desktop-only">{username}</span>
             </button>
             
             {#if userMenuOpen}
@@ -163,8 +219,8 @@
                 </div>
             {/if}
         {:else}
-            {#if isSmallscreen}
-                <div class="auth-buttons">
+            {#if isSmallscreen == false}
+                <div class="auth-buttons desktop-only">
                     <a href="/auth/login" class="auth-btn btn-login">
                         Iniciar Sesión
                     </a>

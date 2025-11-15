@@ -1,16 +1,15 @@
 <script lang="ts">
     import "$lib/style/clasesCards.css"
-    //NO FUNCIONA LO DE LOGIN QUE TE REDIRIGE
     import type { PageLoad } from './$types';
     import { browser } from '$app/environment';
-    import { authPanelTrigger } from '$lib/store/authPanelStore';
-    import { goto } from '$app/navigation';
+    import { redirect } from '@sveltejs/kit';
+    import { onMount } from 'svelte';
 
     let clases = [
         { nombre: "Matemáticas", profesor: "Juan Pérez", imagen: "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/164EE/production/_109347319_gettyimages-611195980.jpg.webp" },
         { nombre: "Historia", profesor: "Ana Gómez", imagen: "https://i.blogs.es/a5c044/luthero/450_1000.jpg" },
         { nombre: "Programación", profesor: "Lucas Torres", imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJmuyls7qbjekEs2p4BEA_i6sgNhsRCi4xxg&s" },
-        { nombre: "Física", profesor: "Carla Ruiz", imagen: "https://images3.memedroid.com/images/UPLOADED372/66b8e9b840b6a.jpeg" }
+        { nombre: "Física", profesor: "Carla Ruiz", imagen: "https://images3.memedroid.com/images/UPLOADED372/66b8e9b940b6a.jpeg" }
     ];
 
     let desplegado: number | null = null;
@@ -35,20 +34,26 @@
     function materiales(nombre: string) {
         alert(`Ver materiales de "${nombre}"`);
     }
+    onMount(() => {
+        if (browser) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                //throw redirect(302, '/auth/login');
+                window.location.href = '/auth/login';
 
-
-
-
-export const load: PageLoad = async () => {
-    if (browser) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            goto('/').then(() => authPanelTrigger.set('login'));
+            }
         }
-    }
-    return {};
-};
-
+    });
+    export const load: PageLoad = async () => {
+      //alert("a");
+        if (browser) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw redirect(302, '/auth/login');
+            }
+        }
+        return {};
+    };
 </script>
 
 <div class="clases-grid">

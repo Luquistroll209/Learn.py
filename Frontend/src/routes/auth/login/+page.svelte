@@ -3,9 +3,9 @@
     import { browser } from '$app/environment';
     import { urlip } from '$lib/config';
     import { showAlert } from '$lib/store/alertStore.js';
+    
 
     onMount(() => {
-        // Verificar si ya está logueado (el layout también lo hace, pero por si acaso)
         const token = localStorage.getItem('token');
         if (token) {
             window.location.href = '/';
