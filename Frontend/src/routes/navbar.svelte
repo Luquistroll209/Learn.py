@@ -3,6 +3,7 @@
 	//import { page } from '$app/state';
 	//import logo from '$lib/images/svelte-logo.svg';
 	import github from '$lib/images/github.svg';
+	import logo from '$lib/images/logo.webp';
     import '$lib/style/navbar.css';
     import { onMount } from 'svelte';
 
@@ -130,7 +131,7 @@
 
 <nav class="navbar">
     <div class="navbar-brand">
-        <a href="/" class="logo">Learn.py</a>
+        <a href="/" class="logo"><img src={logo} alt="Learn.py"></a>
         <a href="https://github.com/Luquistroll209/Learn.py" class="github-link">
             <img class="Github" src={github} alt="GitHub" />
         </a>
@@ -140,9 +141,9 @@
         <li class="nav-item">
             <a href="/" class="nav-link active" on:click={handleNavLinkClick}>Inicio</a>
         </li>
-        <li class="nav-item">
+        <!--<li class="nav-item">
             <a href="/about" class="nav-link" on:click={handleNavLinkClick}>Sobre nosotros</a>
-        </li>
+        </li>-->
         <li class="nav-item">
             <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Clases</a>
         </li>
@@ -150,29 +151,6 @@
             <li class="nav-item">
                 <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Tareas</a>
             </li>
-        {:else}
-            {#if isSmallscreen == false}
-                <div class="auth-buttons">
-                    <a href="/auth/login" class="auth-btn btn-login">
-                        Iniciar Sesión
-                    </a>
-                    <a 
-                        href="/auth/register"
-                        class="auth-btn btn-register">
-                        Registrarse
-                    </a>
-                </div>
-            {:else}
-                <!-- Botones de auth en el menú móvil -->
-                <div class="auth-buttons mobile-auth">
-                    <a href="/auth/login" class="auth-btn btn-login" on:click={handleNavLinkClick}>
-                        Iniciar Sesión
-                    </a>
-                    <a href="/auth/register" class="auth-btn btn-register" on:click={handleNavLinkClick}>
-                        Registrarse
-                    </a>
-                </div>
-            {/if}
         {/if}
     </ul>
     

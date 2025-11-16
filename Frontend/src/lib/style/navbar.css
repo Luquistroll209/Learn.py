@@ -62,6 +62,7 @@ body {
     white-space: nowrap;
     text-decoration: none;
 }
+.logo img{height: 110%;}
 
 .Github {
     width: 36px;
