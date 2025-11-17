@@ -33,6 +33,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     # Crea el usuario en la base de datos
     def create(self, validated_data):
         clases = validated_data.pop('clases', [])
+        notificaciones = validated_data.pop('notificaciones', [])
         
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -46,16 +47,37 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserInfoSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='username')
-    clases = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active', 'clases')
+        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active')
         read_only_fields = fields
 
     def get_clases(self, obj):
         try:
             user_clases = obj.clases_inscritas.all()
-            return ClaseSerializer(user_clases, many=True).data  # ← FALTA .data
+            return ClaseSerializer(user_clases, many=True).data
         except:
+            return []
+
+class TokenUserInfoSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='username')
+    clases = serializers.SerializerMethodField()
+    notificaciones = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active', 'clases', 'notificaciones')
+        read_only_fields = fields
+
+    def get_clases(self, obj):
+        try:
+            user_clases = obj.clases_inscritas.all()
+            return ClaseSerializer(user_clases, many=True).data
+        except:
+            return []
+    def get_notificaciones(self, obj):
+        try:
+            return obj.profile.notificaciones
+        except UserProfile.DoesNotExist:
             return []

@@ -15,7 +15,6 @@ def get_user_from_token(token_key):
     except Token.DoesNotExist:
         return None
 
-
 class CreateClassView(APIView):
     def post(self, request):
         header = request.META.get('HTTP_AUTHORIZATION', '')

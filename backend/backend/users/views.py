@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import RegisterSerializer, UserInfoSerializer  
+from .serializers import RegisterSerializer, UserInfoSerializer, TokenUserInfoSerializer
 
 from rest_framework.authtoken.models import Token
 
@@ -69,9 +69,26 @@ class userToken(APIView):
         user = get_user_from_token(token_key)
             
         if user:
-            serializer = UserInfoSerializer(user)
+            serializer = TokenUserInfoSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({'Error': 'Token inválido'}, status=status.HTTP_401_UNAUTHORIZED)
         
     #return Response({'Error': 'Token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Notificaciones
+
+class  createMensaje(APIView):
+    def post(self, request):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        User = get_user_from_token(header)
+
+        sendTo = request.data.get('sendTo')
+        asunto = request.data.get('password')
+        description = request.data.get('password')
+        #SIN TERMINAR, TERMINAR EN EL FUTURO
+
+
+
+        
