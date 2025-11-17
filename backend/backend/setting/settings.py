@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-6(0)j1ad6_lwtz())txmj+3gb*qu&p2o-v^r3+)0wys6o)&(2f
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['lt209.ddns.net']
+ALLOWED_HOSTS = ['lt209.ddns.net',  '127.0.0.1']
 CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net:2000"]
 CORS_ALLOW_HEADERS = list(default_headers) + [
         'content-type',
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     #Aplicaciones de la web
     'users',
+    'clases',
     #librerias de django
     'corsheaders',
     'django.contrib.admin',

@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import RegisterSerializer, UserInfoSerializer  
 
+from rest_framework.authtoken.models import Token
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -52,4 +54,24 @@ class userNameInfo(APIView):
         except User.DoesNotExist:
             return Response({'Error': 'User doesn\'t exist'}, status=status.HTTP_404_NOT_FOUND)
 
+def get_user_from_token(token_key):
+    try:
+        token = Token.objects.get(key=token_key)
+        return token.user
+    except Token.DoesNotExist:
+        return None
+    
+class userToken(APIView):
+    def get(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+
+        token_key = auth_header
+        user = get_user_from_token(token_key)
+            
+        if user:
+            serializer = UserInfoSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'Error': 'Token inválido'}, status=status.HTTP_401_UNAUTHORIZED)
         
+    #return Response({'Error': 'Token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import UserProfile
+from clases.serializers import ClaseSerializer
 
 class RegisterSerializer(serializers.ModelSerializer):
     name = serializers.CharField(write_only=True, source='username')
@@ -54,6 +55,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     def get_clases(self, obj):
         try:
-            return obj.profile.clases
-        except UserProfile.DoesNotExist:
+            user_clases = obj.clases_inscritas.all()
+            return ClaseSerializer(user_clases, many=True).data  # ← FALTA .data
+        except:
             return []
