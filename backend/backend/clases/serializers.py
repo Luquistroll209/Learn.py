@@ -6,4 +6,4 @@ from clases.models import Clase
 class ClaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clase
-        fields = ['id', 'name', 'description', 'created_by']
+        fields = ['id', 'name', 'description', 'teacher']

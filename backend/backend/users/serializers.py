@@ -63,11 +63,11 @@ class UserInfoSerializer(serializers.ModelSerializer):
 class TokenUserInfoSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='username')
     clases = serializers.SerializerMethodField()
-    notificaciones = serializers.SerializerMethodField()
+    notifications = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active', 'clases', 'notificaciones')
+        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active', 'clases', 'notifications')
         read_only_fields = fields
 
     def get_clases(self, obj):
@@ -76,8 +76,8 @@ class TokenUserInfoSerializer(serializers.ModelSerializer):
             return ClaseSerializer(user_clases, many=True).data
         except:
             return []
-    def get_notificaciones(self, obj):
+    def get_notifications(self, obj):
         try:
-            return obj.profile.notificaciones
+            return obj.profile.notifications
         except UserProfile.DoesNotExist:
             return []

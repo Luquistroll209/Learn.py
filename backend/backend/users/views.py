@@ -77,7 +77,7 @@ class userToken(APIView):
     #return Response({'Error': 'Token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Notificaciones
+# notifications
 
 class  createMensaje(APIView):
     def post(self, request):
