@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     #Aplicaciones de la web
     'users',
     'clases',
+    'notifications',
     #librerias de django
     'corsheaders',
     'django.contrib.admin',

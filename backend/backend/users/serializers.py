@@ -53,13 +53,6 @@ class UserInfoSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active')
         read_only_fields = fields
 
-    def get_clases(self, obj):
-        try:
-            user_clases = obj.clases_inscritas.all()
-            return ClaseSerializer(user_clases, many=True).data
-        except:
-            return []
-
 class TokenUserInfoSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='username')
     clases = serializers.SerializerMethodField()
@@ -70,14 +63,18 @@ class TokenUserInfoSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active', 'clases', 'notifications')
         read_only_fields = fields
 
+    #obtener notificaciones
     def get_clases(self, obj):
         try:
             user_clases = obj.clases_inscritas.all()
             return ClaseSerializer(user_clases, many=True).data
         except:
             return []
+
+    #Obtener notificaciones del usuario
     def get_notifications(self, obj):
-        try:
-            return obj.profile.notifications
-        except UserProfile.DoesNotExist:
-            return []
+        from notifications.models import Notification
+        from notifications.serializers import NotificationSerializer
+        
+        notifications = Notification.objects.filter(to=obj)
+        return NotificationSerializer(notifications, many=True).data
