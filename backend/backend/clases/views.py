@@ -8,6 +8,10 @@ from clases.models import Clase
 from rest_framework import status
 from .serializers import ClaseSerializer
 from users.views import get_user_from_token
+from django.conf import settings
+
+#Funciones de mensajeria
+from notifications.views import enviarMensaje
 
 #Funcion para crear una clase 
 class CreateClassView(APIView):
@@ -57,3 +61,101 @@ class obtainClass(APIView):
             return Response({'clases': clases_data}, status=status.HTTP_200_OK)
         else:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class inviteUser(APIView):
+    def post(self, request):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        token = header
+        user = get_user_from_token(token)
+
+        if not user:
+            return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Obtener datos
+        clase_id = request.data.get('clase_id')
+        email = request.data.get('email')
+        
+        # Mensajes de erores
+        if not clase_id:
+            return Response({'Error': 'clase_id es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not email:
+            return Response({'Error': 'email es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Busca el id de la clase
+            clase = Clase.objects.get(id=clase_id)
+            
+            # Verificaciones
+            if clase.teacher != user:
+                return Response({'Error': 'Solo el profesor puede invitar usuarios'}, status=status.HTTP_403_FORBIDDEN)
+            
+            user_to_invite = User.objects.get(email=email)
+
+            if clase.students.filter(id=user_to_invite.id).exists():
+                return Response({'Error': 'El usuario ya está en esta clase'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Crear enlace de invitación
+            join_url = settings.IP + f"/api/class/join/{clase.id}" 
+            
+            # Mesnaje a enviar
+            mensaje_invitacion = f"""
+            ¡Has sido invitado a unirte a la clase "{clase.name}"!
+            
+            Profesor: {user.get_full_name() or user.email}
+            
+            Para unirte a la clase, haz clic en el siguiente enlace:
+            {join_url}
+            
+            Descripción: {clase.description}
+            """
+            
+            asunto = f"Invitación a la clase: {clase.name}"
+            
+            #enviar mensaje al correo y guardado en la base de datos 
+            notificacion_data = enviarMensaje(
+                asunto=asunto,
+                mensaje=mensaje_invitacion,
+                destinario=user_to_invite,
+                email=email,
+                user=user
+            )
+            
+            return Response({
+                'message': f'Invitación enviada a {email}',
+                'notificacion': notificacion_data
+            }, status=status.HTTP_200_OK)
+            
+        except Clase.DoesNotExist:
+            return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class JoinClassAutoView(APIView):
+    def post(self, request, clase_id):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        token = header
+        user = get_user_from_token(token)
+
+        #verificaciones
+        if not user:
+            return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            clase = Clase.objects.get(id=clase_id)
+            #mas verificaciones
+            if clase.students.filter(id=user.id).exists():
+                return Response({'Error': 'Ya estás en esta clase'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # agregacion del usuario a la clase
+            clase.students.add(user)
+            
+            serializer = ClaseSerializer(clase)
+            return Response({
+                'message': 'Te has unido a la clase exitosamente',
+                'clase': serializer.data
+            }, status=status.HTTP_200_OK)
+            
+        except Clase.DoesNotExist:
+            return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)

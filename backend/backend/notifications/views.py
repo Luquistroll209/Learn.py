@@ -53,8 +53,22 @@ def enviar_email_super_basico(asunto, mensaje, destinatario, contexto=None):
         print(f"Error inesperado: {e}")
         return False
 
-
-
+def enviarMensaje(asunto, mensaje, destinario, email, user):
+        # Creacion de notificación
+    notificación = Notification.objects.create(
+        to=destinario,
+        subject=asunto,
+        message=mensaje or '',
+        created_by=user
+    )
+        #Enviar mensaje al correo
+    enviar_email_super_basico(
+            asunto="Nuevo correo recivido de Learn.py: " + asunto,
+            mensaje=mensaje,
+            destinatario=email
+        )
+    serializer = NotificationSerializer(notificación)
+    return serializer.data
 #funcion para crear un mensaje 
 class createNotification(APIView):
     def post(self, request):
@@ -91,6 +105,7 @@ class createNotification(APIView):
             return Response({'Error': 'Usuario destinatario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         
         # Creacion de notificación
+        """
         notificación = Notification.objects.create(
             to=to_user,
             subject=subject,
@@ -104,7 +119,9 @@ class createNotification(APIView):
                 destinatario=to_email
             )
         serializer = NotificationSerializer(notificación)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        """
+        
+        return Response(enviarMensaje(subject, message, to_user, to_email, user), status=status.HTTP_201_CREATED)
 
 
 class obtainNotifications(APIView):

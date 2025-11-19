@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-6(0)j1ad6_lwtz())txmj+3gb*qu&p2o-v^r3+)0wys6o)&(2f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
+#IPs
+IP ='127.0.0.1:8000'
 ALLOWED_HOSTS = ['lt209.ddns.net',  '127.0.0.1']
 CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net:2000"]
 CORS_ALLOW_HEADERS = list(default_headers) + [
