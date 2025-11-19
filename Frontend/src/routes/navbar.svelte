@@ -6,6 +6,7 @@
 	import logo from '$lib/images/logo.webp';
     import '$lib/style/navbar.css';
     import { onMount } from 'svelte';
+    import { urlip } from '$lib/config';
 
     //componentes
     import { showAlert } from '$lib/store/alertStore.js';
@@ -17,18 +18,36 @@
 
     let mobileMenuOpen = false;
     let userMenuOpen = false;
+    let notificationsMenuOpen = false;
 
     //Detectar si es un movil o no para ajustar toda la interfaz
     let isSmallscreen = false
 
+    // Notificaciones (datos de ejemplo)
+    let unreadNotifications = 2;
+    
+    /*
+    let notifications = [
+        {
+            id: 1,
+            from: "De",
+            subject: "Subject",
+            message: "mensaje",
+            time: "Hace 2 horas",
+            read: false
+        },
+    ];
+    */
+   let notifications: any[] = [];
+    
     if (browser) {
         isSmallscreen = window.innerWidth <= 1260;
-        console.log('Es pantalla pequeña:', isSmallscreen);
+        //console.log('Es pantalla pequeña:', isSmallscreen);
     }
 
     onMount(() => {
         checkAuthStatus();
-        
+        checkNotification();
         // Agregar listener para resize
         if (browser) {
             window.addEventListener('resize', handleResize);
@@ -53,7 +72,27 @@
             }
         }
     }
+    async function checkNotification(){
+        const token = localStorage.getItem('token');
+        
+        const respose = await fetch(`${urlip}notification/obtainNotifications/`, {
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'authorization': `${token}`
+                },
+            });
 
+            const data = await respose.json();
+            notifications = data.notifications;
+            
+            if (respose.ok){
+                //a
+            }/*else{
+                showAlert("Error", "Error", "red");
+            }*/
+    }
     function checkAuthStatus() {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('userData');
@@ -83,6 +122,7 @@
         mobileMenuOpen = !mobileMenuOpen;
         if (mobileMenuOpen) {
             userMenuOpen = false;
+            notificationsMenuOpen = false;
             if (browser) {
                 document.body.style.overflow = 'hidden';
             }
@@ -108,6 +148,7 @@
         userMenuOpen = !userMenuOpen;
         if (userMenuOpen) {
             mobileMenuOpen = false;
+            notificationsMenuOpen = false;
             if (browser) {
                 document.body.style.overflow = '';
             }
@@ -116,6 +157,38 @@
 
     function closeUserMenu(): void {
         userMenuOpen = false;
+    }
+
+    function toggleNotificationsMenu(): void {
+        notificationsMenuOpen = !notificationsMenuOpen;
+        if (notificationsMenuOpen) {
+            mobileMenuOpen = false;
+            userMenuOpen = false;
+            if (browser) {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
+    function closeNotificationsMenu(): void {
+        notificationsMenuOpen = false;
+    }
+
+    function markAsRead(notificationId: number): void {
+        const notification = notifications.find(n => n.id === notificationId);
+        if (notification && !notification.read) {
+            notification.read = true;
+            unreadNotifications = Math.max(0, unreadNotifications - 1);
+        }
+    }
+
+    function markAllAsRead(): void {
+        notifications.forEach(notification => {
+            if (!notification.read) {
+                notification.read = true;
+            }
+        });
+        unreadNotifications = 0;
     }
 </script>
 
@@ -165,15 +238,50 @@
                     <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="currentColor"/>
                 </svg>
             </button>
-            <button 
-                type="button" 
-                class="icon-button desktop-only"
-                aria-label="Notificaciones"
-            >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
-                </svg>
-            </button>
+            
+            <div class="notifications-container">
+                <button 
+                    type="button" 
+                    class="icon-button desktop-only"
+                    aria-label="Notificaciones"
+                    on:click={toggleNotificationsMenu}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="currentColor"/>
+                    </svg>
+                    {#if unreadNotifications > 0}
+                        <div class="notification-badge">{unreadNotifications}</div>
+                    {/if}
+                </button>
+                
+                {#if notificationsMenuOpen}
+                    <div class="notifications-menu" role="menu" tabindex="0" on:mouseleave={closeNotificationsMenu}>
+                        <div class="notifications-header">
+                            <h3>Notificaciones</h3>
+                            {#if unreadNotifications > 0}
+                                <button class="mark-all-read" on:click={markAllAsRead}>Marcar todas como leídas</button>
+                            {/if}
+                        </div>
+                        <div class="notifications-list">
+                            {#each notifications as notification (notification.id)}
+                                <div class="notification-item {notification.read ? 'read' : 'unread'}" on:click={() => markAsRead(notification.id)}>
+                                    <div class="notification-from">{notification.from}</div>
+                                    <div class="notification-subject">{notification.subject}</div>
+                                    <div class="notification-message">{notification.message}</div>
+                                    <div class="notification-time">{notification.time}</div>
+                                    {#if !notification.read}
+                                        <div class="notification-dot"></div>
+                                    {/if}
+                                </div>
+                            {/each}
+                        </div>
+                        {#if notifications.length === 0}
+                            <div class="no-notifications">No hay notificaciones</div>
+                        {/if}
+                    </div>
+                {/if}
+            </div>
+            
             <button 
                 type="button" 
                 class="user-profile"

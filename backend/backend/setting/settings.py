@@ -28,8 +28,10 @@ DEBUG = True
 
 #IPs
 IP ='127.0.0.1:8000'
-ALLOWED_HOSTS = ['lt209.ddns.net',  '127.0.0.1']
-CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net:2000"]
+CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ['lt209.ddns.net',  '127.0.0.1', 'localhost']
+#CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net:2000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost"]
 CORS_ALLOW_HEADERS = list(default_headers) + [
         'content-type',
         'authorization',
