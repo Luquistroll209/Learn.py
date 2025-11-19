@@ -146,3 +146,13 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
+
+
+# settings.py - Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'luquistroll@gmail.com'
+EMAIL_HOST_PASSWORD = 'nkvt slwo nogk tgba'
+DEFAULT_FROM_EMAIL = 'luquistroll@gmail.com'

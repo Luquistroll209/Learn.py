@@ -11,6 +11,50 @@ from .serializers import NotificationSerializer
 from users.views import get_user_from_token
 from users.serializers import TokenUserInfoSerializer
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+import smtplib
+import socket
+
+#Funcion para mandar emails al correo
+def enviar_email_super_basico(asunto, mensaje, destinatario, contexto=None):
+    try:
+        if contexto is None:
+            contexto = {}
+        
+        # Mensaje
+        contexto['mensaje'] = mensaje
+        
+        #renderizar el html del email
+        html_content = render_to_string('email_base.html', contexto)
+
+        
+        # Crear el email
+        email = EmailMultiAlternatives(
+            subject=asunto,
+            body=mensaje,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[destinatario]
+        )
+        
+        email.attach_alternative(html_content, "text/html")
+        
+        # Enviar con manejo de timeout
+        email.send(fail_silently=False)
+        
+        print(f"Email enviado a: {destinatario}")
+        return True
+        
+    except (smtplib.SMTPException, socket.timeout, ConnectionError) as e:
+        print(f"Error enviando email: {e}")
+        return False
+    except Exception as e:
+        print(f"Error inesperado: {e}")
+        return False
+
+
+
 #funcion para crear un mensaje 
 class createNotification(APIView):
     def post(self, request):
@@ -36,7 +80,7 @@ class createNotification(APIView):
         if not subject:
             return Response({'Error': 'El subject de la clase es requerido'}, status=status.HTTP_400_BAD_REQUEST)
         if not to_email:
-            return Response({'Error': 'To es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Error': 'To_email es requerido'}, status=status.HTTP_400_BAD_REQUEST)
         if not message:
             return Response({'Error': 'Es requerido un mensaje'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -53,7 +97,12 @@ class createNotification(APIView):
             message=message or '',
             created_by=user
         )
-        
+        #Enviar mensaje al correo
+        enviar_email_super_basico(
+                asunto="Nuevo correo recivido de Learn.py: " + subject,
+                mensaje=message,
+                destinatario=to_email
+            )
         serializer = NotificationSerializer(notificación)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -70,3 +119,6 @@ class obtainNotifications(APIView):
             return Response({'notifications': clases_data}, status=status.HTTP_200_OK)
         else:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# Uso más simple
