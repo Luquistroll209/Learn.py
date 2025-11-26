@@ -714,5 +714,18 @@ body {
     color: var(--text-light);
     font-size: 14px;
 }
+.RedactButton{
+    margin: 10px 40px 10px 30px;
+    border: 1px solid grey;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-radius: 20px;
+    padding: 10px;
+    transition: 0.5s;
+    text-align: center;
+}
+.RedactButton:hover{
+    background: linear-gradient(0deg, var(--primary-color), var(--primary-dark));
+    scale: 110%;
 
-
+}

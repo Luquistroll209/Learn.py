@@ -24,7 +24,7 @@
     let isSmallscreen = false
 
     // Notificaciones (datos de ejemplo)
-    let unreadNotifications = 2;
+    let unreadNotifications = 0;
     
     /*
     let notifications = [
@@ -74,6 +74,7 @@
     }
     async function checkNotification(){
         const token = localStorage.getItem('token');
+        //unreadNotifications
         
         const respose = await fetch(`${urlip}notification/obtainNotifications/`, {
                 method: 'get',
@@ -86,6 +87,7 @@
 
             const data = await respose.json();
             notifications = data.notifications;
+            unreadNotifications = data.notifications.length;
             
             if (respose.ok){
                 //a
@@ -261,7 +263,9 @@
                             {#if unreadNotifications > 0}
                                 <button class="mark-all-read" on:click={markAllAsRead}>Marcar todas como leídas</button>
                             {/if}
+
                         </div>
+                        <a class="RedactButton" href="/notifications">Redactar</a>
                         <div class="notifications-list">
                             {#each notifications as notification (notification.id)}
                                 <div class="notification-item {notification.read ? 'read' : 'unread'}" on:click={() => markAsRead(notification.id)}>
