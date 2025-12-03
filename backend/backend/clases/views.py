@@ -96,7 +96,7 @@ class inviteUser(APIView):
                 return Response({'Error': 'El usuario ya está en esta clase'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Crear enlace de invitación
-            join_url = settings.IP + f"/api/class/join/{clase.id}" 
+            join_url = settings.IP + f"/api/class/join/{clase.id}/" 
             
             # Mesnaje a enviar
             mensaje_invitacion = f"""

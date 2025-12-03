@@ -136,6 +136,12 @@ class obtainNotifications(APIView):
             return Response({'notifications': clases_data}, status=status.HTTP_200_OK)
         else:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+"""
+class visto(APIView):
+    def get(self, request):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        user = get_user_from_token(header)
 
+        if user:
+"""
 
-# Uso más simple
