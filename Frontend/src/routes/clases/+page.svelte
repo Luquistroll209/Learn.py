@@ -81,8 +81,8 @@
     }
 </script>
 
+<a href="clases/createClass/">Crear una clase</a>
 <div class="clases-grid">
-  <h2>Las clases aun no estan conectadas a la base de datos</h2>
   {#each clases as clase, i}
     <div class="clase-card">
       <div class="clase-img-container">
