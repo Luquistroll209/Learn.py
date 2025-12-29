@@ -18,6 +18,7 @@
 
     function toggleMenu(index: number) {
         desplegado = desplegado === index ? null : index;
+        
     }
 
     function abandonarClase(name: string) {
@@ -74,34 +75,53 @@
 
             if (respose.ok){
               console.log(data);
-              clases = data.clases || []; 
+              
+              clases = data.clases || [];
+              
             }/*else{
                 showAlert("Error", "Error", "red");
             }*/
     }
 </script>
 
-<a href="clases/createClass/">Crear una clase</a>
+<div class="header-container">
+    <a href="clases/createClass/" class="create-class-btn">+ Crear una clase</a>
+</div>
+
 <div class="clases-grid">
   {#each clases as clase, i}
     <div class="clase-card">
       <div class="clase-img-container">
-        <img src={clase.imagen} alt={clase.name} class="clase-img" />
-        <button class="clase-options" on:click={() => toggleMenu(i)}>⋮</button>
+        <a href="clases/clase-{clase.id}" class="clase-link-overlay">
+          <img src={clase.imagen_url} alt={clase.name} class="clase-img" />
+          
+          <div class="clase-header-overlay">
+            <h3 class="clase-title">{clase.name}</h3>
+            <p class="clase-section">Sección placeholder</p>
+            <p class="clase-teacher">{clase.teacher}</p>
+          </div>
+        </a>
+        <button class="clase-options" on:click|stopPropagation={() => toggleMenu(i)}>⋮</button>
         {#if desplegado === i}
           <div class="menu">
-            <button on:click={() => abandonarClase(clase.name)}>Abandonar clase</button>
+            <button on:click|stopPropagation={() => abandonarClase(clase.name)}>Abandonar clase</button>
+            <button on:click|stopPropagation={() => abandonarClase(clase.name)}>Configurar</button>
+            <button on:click|stopPropagation={() => abandonarClase(clase.name)}>Invitar</button>
           </div>
         {/if}
       </div>
-      <div class="clase-info">
-        <h3>{clase.name}</h3>
-        <p>Profesor: {clase.teacher}</p>
-      </div>
-      <div class="clase-buttons">
-        <button on:click={() => verTareas(clase.name)}>Tareas</button>
-        <button on:click={() => abrirForo(clase.name)}>Foro</button>
-        <button on:click={() => materiales(clase.name)}>Materiales</button>
+      
+      <div class="clase-footer">
+        <button class="footer-icon-btn" on:click|stopPropagation={() => verTareas(clase.name)} title="Próximas tareas">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+          </svg>
+        </button>
+        <button class="footer-icon-btn" on:click|stopPropagation={() => abrirForo(clase.name)} title="Carpeta de clase">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+          </svg>
+        </button>
       </div>
     </div>
   {/each}

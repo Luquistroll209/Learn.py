@@ -41,6 +41,9 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+#Tamaño de las imagenes de portada
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 
 # Application definition

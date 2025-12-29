@@ -13,14 +13,43 @@
 		{@render children()}
 	</main>
 
-	<footer>
-		<p>
-			learn.py
-		</p>
-	</footer>
+	<div class="page-footer">
+		<p>© 2024 Learn.py - Todos los derechos reservados</p>
+		<div class="footer-links">
+			<a href="/privacy">Privacidad</a>
+			<a href="/terms">Términos</a>
+			<a href="/">Sobre Nosotros</a>
+		</div>
+	</div>
 </div>
 
 <style>
+	.page-footer {
+		margin-top: 50px;
+		padding-top: 20px;
+		border-top: 1px solid var(--border-color);
+		text-align: center;
+		color: var(--text-light);
+	}
+	
+	.footer-links {
+		display: flex;
+		justify-content: center;
+		gap: 20px;
+		margin-top: 15px;
+		flex-wrap: wrap;
+	}
+	
+	.footer-links a {
+		color: var(--text-light);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+	
+	.footer-links a:hover {
+		color: var(--primary-color);
+		text-decoration: underline;
+	}
 	.app {
 		display: flex;
 		flex-direction: column;

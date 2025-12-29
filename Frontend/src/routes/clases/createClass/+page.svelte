@@ -57,6 +57,7 @@
             
             if (response.ok) {
                 alert('Clase creada exitosamente');
+                console.log(formData);
                 className = '';
                 classDescription = '';
                 selectedImage = null;
