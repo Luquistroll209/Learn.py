@@ -5,6 +5,6 @@ urlpatterns = [
     #URLs
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
-    path('usernameInfo/', userNameInfo.as_view(), name='usernameInfo'),
+    path('usernameInfo/<str:identifier>/', userNameInfo.as_view(), name='usernameInfo-detail'),
     path('userToken/', userToken.as_view(), name='userToken'),
 ]

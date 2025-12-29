@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import UserProfile
 from clases.serializers import ClaseSerializer
+import random
 
 class RegisterSerializer(serializers.ModelSerializer):
     name = serializers.CharField(write_only=True, source='username')
@@ -35,7 +36,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         clases = validated_data.pop('clases', [])
         notificaciones = validated_data.pop('notificaciones', [])
         
+        #generación de una ID aleatoria con 10 digitos
+        while True:
+            random_id = random.randint(1000000000, 9999999999)
+            if not User.objects.filter(id=random_id).exists():
+                break
+
         user = User.objects.create_user(
+            id=random_id,
             username=validated_data['username'],
             last_name=validated_data['last_name'],
             email=validated_data.get('email', ''),

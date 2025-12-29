@@ -45,7 +45,7 @@ class LoginView(APIView):
         return Response({'Error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class userNameInfo(APIView): 
-    def post(self, request):
+    def get(self, request):
         name = request.data.get('name')
         try:
             user = User.objects.get(username=name)
@@ -53,6 +53,28 @@ class userNameInfo(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'Error': 'User doesn\'t exist'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def get(self, request, identifier=None):
+        if not identifier:
+            return Response({'Error': 'Se requiere un nombre de usuario o ID'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        #Comprobar si es una id o un nombre de usuario
+        try:
+            if identifier.isdigit():
+                user = User.objects.get(id=int(identifier))
+            else:
+                user = User.objects.get(username=identifier)
+            
+            serializer = UserInfoSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({'Error': 'Usuario no encontrado'}, 
+                          status=status.HTTP_404_NOT_FOUND)
+        except ValueError:
+            return Response({'Error': 'ID inválido'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
 
 def get_user_from_token(token_key):
     try:
