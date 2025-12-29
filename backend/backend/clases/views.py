@@ -71,6 +71,37 @@ class obtainClass(APIView):
         else:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
 
+class obtainClassByID(APIView):
+    def get(self, request, identifier=None):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        user = get_user_from_token(header)
+
+        if not user:
+            return Response({'Error': 'Token incorrecto'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not identifier:
+            return Response(
+                {'Error': 'Se requiere una ID de una clase'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = TokenUserInfoSerializer(user)
+        clases_data = serializer.data['clases']
+
+        clase = next(
+            (c for c in clases_data if c['id'] == identifier),
+            None
+        )
+
+        if not clase:
+            return Response(
+                {'Error': 'Clase no encontrada'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        return Response(clase, status=status.HTTP_200_OK)
+
+        
+
 class inviteUser(APIView):
     def post(self, request):
         header = request.META.get('HTTP_AUTHORIZATION', '')

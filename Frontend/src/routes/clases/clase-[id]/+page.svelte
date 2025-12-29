@@ -1,16 +1,60 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import type { PageLoad } from './$types';
     
     let activeTab = 'tablón';
     let showTaskModal = false;
     let showAnnouncementModal = false;
     import "$lib/style/inClass.css"
-    import type { PageLoad } from './$types';
+    import imgDefault from '$lib/images/classDefault.webp'
+    
     import { browser } from '$app/environment';
     import { redirect } from '@sveltejs/kit';
     import { urlip } from '$lib/config';
-    let clases: any[] = [];
+    let clase: any[] = [];
+    import { page } from '$app/stores';
+    import { classicNameResolver } from 'typescript';
+    let id;
+	$: id = $page.params.id;
     
+    onMount(() => {
+        if (browser) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                //throw redirect(302, '/auth/login');
+                window.location.href = '/auth/login';
+
+            } else {
+                loadClass();
+            }
+        }
+    });
+
+    async function loadClass(){
+        const token = localStorage.getItem('token');
+        
+        const respose = await fetch(`${urlip}class/obtainClassByID/${id}`, {
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'authorization': `${token}`
+                },
+            });
+
+            const data = await respose.json();
+
+            if (respose.ok){
+              
+              
+              clase = data || [];    
+              console.log(clase);
+              
+            }/*else{
+                showAlert("Error", "Error", "red");
+            }*/
+    }
+
     const announcements = [
         { id: 1, author: 'Profesor1', title: 'Bienvenidos al curso', date: '15 Dic', content: 'Bienvenidos a la clase de Programación Web. Espero que tengamos un gran semestre.', avatar: 'PG' },
         { id: 2, author: 'Profesor1', title: 'Examen próximo', date: '20 Dic', content: 'Recordatorio: El examen del tema 3 será el próximo viernes.', avatar: 'PG' },
@@ -49,31 +93,26 @@
 
 <div class="class-container">
     <div class="class-header">
+        {#if clase.imagen_url === null}
+            <div class="portada"><img src={imgDefault} alt="" class="portada" ></div>
+        {:else}
+            <div class="portada"><img src={clase.imagen_url} alt="" class="portada" ></div>
+        {/if}
         <div class="class-header-content">
-            <h1>Titulo de la clase</h1>
-            <p>Descripción</p>
-            <p>Profesor • Curso 2024-2025</p>
+            <h1>{clase.name}</h1>
+            <p>{clase.description}</p>
+            <p>{clase.teacher_name} • Curso 2024-2025</p>
             <!--<span class="class-code">Código: ABC123</span> posiblemente esto no se añada-->
             <!--El tema de codigos se dejara para ultimo momento ya que no es necesario-->
         </div>
     </div>
     
     <div class="class-tabs">
-        <button class="tab-button" class:active={activeTab === 'tablón'} on:click={() => activeTab = 'tablón'}>
-            📢 Tablón
-        </button>
-        <button class="tab-button" class:active={activeTab === 'tareas'} on:click={() => activeTab = 'tareas'}>
-            📝 Tareas
-        </button>
-        <button class="tab-button" class:active={activeTab === 'personas'} on:click={() => activeTab = 'personas'}>
-            👥 Personas
-        </button>
-        <button class="tab-button" class:active={activeTab === 'calificaciones'} on:click={() => activeTab = 'calificaciones'}>
-            📊 Calificaciones
-        </button>
-        <button class="tab-button" class:active={activeTab === 'materiales'} on:click={() => activeTab = 'materiales'}>
-            📚 Materiales
-        </button>
+        <button class="tab-button" class:active={activeTab === 'tablón'} on:click={() => activeTab = 'tablón'}>Tablón</button>
+        <button class="tab-button" class:active={activeTab === 'tareas'} on:click={() => activeTab = 'tareas'}>Tareas</button>
+        <button class="tab-button" class:active={activeTab === 'personas'} on:click={() => activeTab = 'personas'}>Personas</button>
+        <button class="tab-button" class:active={activeTab === 'calificaciones'} on:click={() => activeTab = 'calificaciones'}>Calificaciones</button>
+        <button class="tab-button" class:active={activeTab === 'materiales'} on:click={() => activeTab = 'materiales'}>Materiales</button>
     </div>
     
     <div class="class-content">
@@ -197,11 +236,11 @@
                 <div class="card-title">Próximas entregas</div>
                 <div class="upcoming-item">
                     <div class="upcoming-title">Proyecto Final - Primera Entrega</div>
-                    <div class="upcoming-date">📅 15 de Enero</div>
+                    <div class="upcoming-date">15 de Enero</div>
                 </div>
                 <div class="upcoming-item">
                     <div class="upcoming-title">Ejercicios Tema 2</div>
-                    <div class="upcoming-date">📅 20 de Enero</div>
+                    <div class="upcoming-date">20 de Enero</div>
                 </div>
             </div>
             <!--
@@ -218,13 +257,13 @@
             <div class="card">
                 <div class="card-title">Acciones rápidas</div>
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;">
-                    📧 Enviar correo
+                    Enviar correo
                 </button>
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;">
-                    📅 Ver calendario
+                    Ver calendario
                 </button>
                 <a href="/clases/clase-[id]/dashboard" class="secondary-button" style="width: 100%;">
-                    ⚙️ Configuración
+                    Configuración
                 </a>
             </div>
         </div>

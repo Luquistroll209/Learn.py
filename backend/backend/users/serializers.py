@@ -58,7 +58,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('id', 'name', 'last_name', 'email', 'date_joined', 'is_active')
+        fields = ('id', 'name', 'last_name', 'email', 'date_joined')
         read_only_fields = fields
 
 class TokenUserInfoSerializer(serializers.ModelSerializer):
