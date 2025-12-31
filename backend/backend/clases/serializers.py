@@ -21,7 +21,13 @@ class ClaseSerializer(serializers.ModelSerializer):
         return None
     
     def get_teacher_name(self, obj):
-        return obj.teacher.get_full_name() or obj.teacher.username
+        teacher = obj.teacher
+        if hasattr(teacher, 'last_name') and teacher.last_name:
+            if hasattr(teacher, 'name') and teacher.name:
+                return f"{teacher.last_name} {teacher.name}"
+            elif hasattr(teacher, 'first_name') and teacher.first_name:
+                return f"{teacher.last_name} {teacher.first_name}"
+        return teacher.username or str(teacher)
     
     def create(self, validated_data):
         imagen = validated_data.pop('imagen', None)
