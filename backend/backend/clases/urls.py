@@ -10,5 +10,5 @@ urlpatterns = [
 
     #Invitaciones y unirse a clases
     path('invite/', inviteUser.as_view(), name='invite-user'),
-    path('join/<int:clase_id>/', JoinClassAutoView.as_view(), name='join-class-auto'),
+    path('join/<str:clase_id>/', JoinClassAutoView.as_view(), name='join-class-auto'),
 ]

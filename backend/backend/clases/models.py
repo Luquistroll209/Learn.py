@@ -45,8 +45,14 @@ class Clase(models.Model):
     description = models.TextField()
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clases_creadas')
     imagen = models.ImageField(upload_to='clases/temp/', null=True, blank=True)
-    students = models.ManyToManyField(User, related_name='clases_inscritas', blank=True)
+    students = models.ManyToManyField(
+        User, 
+        through='ClaseMembership',
+        related_name='clases_inscritas', 
+        blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    
     
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -70,3 +76,21 @@ class Clase(models.Model):
             super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+
+class ClaseMembership(models.Model):
+    ROLES = (
+        ('student', 'Estudiante'),
+        ('teacher', 'Profesor'),
+        ('assistant', 'Asistente'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLES, default='student')
+    joined_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'clase') 
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.clase.name} ({self.role})"

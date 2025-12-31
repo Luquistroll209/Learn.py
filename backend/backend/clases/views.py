@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from clases.models import Clase
 from rest_framework import status
 from .serializers import ClaseSerializer
+from .models import ClaseMembership
 from users.views import get_user_from_token
 from django.conf import settings
 
@@ -14,8 +15,6 @@ from django.conf import settings
 from notifications.views import enviarMensaje
 
 #Funcion para crear una clase 
- 
-
 class CreateClassView(APIView):
     def post(self, request):
         header = request.META.get('HTTP_AUTHORIZATION', '')
@@ -45,7 +44,14 @@ class CreateClassView(APIView):
         
         if serializer.is_valid():
             clase = serializer.save()
+            ClaseMembership.objects.create(
+                user=user,
+                clase=clase,
+                role='teacher'
+            )
+            
             clase.students.add(user)
+
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -241,7 +247,7 @@ class inviteUser(APIView):
 
 
 class JoinClassAutoView(APIView):
-    def post(self, request, clase_id):
+    def get(self, request, clase_id):
         header = request.META.get('HTTP_AUTHORIZATION', '')
         token = header
         user = get_user_from_token(token)
@@ -254,11 +260,16 @@ class JoinClassAutoView(APIView):
             clase = Clase.objects.get(id=clase_id)
             if clase.students.filter(id=user.id).exists():
                 return Response({'Error': 'Ya estás en esta clase'}, status=status.HTTP_400_BAD_REQUEST)
-            
+            clase_membership = ClaseMembership.objects.create(
+                user=user,
+                clase=clase,
+                role='student'  # Rol por defecto
+            )
             # agregación del usuario a la clase
             clase.students.add(user)
             
             serializer = ClaseSerializer(clase)
+
             return Response({
                 'message': 'Te has unido a la clase exitosamente',
                 'clase': serializer.data

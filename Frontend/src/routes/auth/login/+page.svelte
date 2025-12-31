@@ -44,7 +44,7 @@
 
                 showAlert("Éxito", "Sesión iniciada correctamente", "blue");
                 setTimeout(() => {
-                    window.location.href = '/';
+                    window.location.href = '/dashboard/';
                 }, 1000);
             }else{
                 showAlert("Error", "Credenciales erroneas", "red");

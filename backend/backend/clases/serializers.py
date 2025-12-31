@@ -1,15 +1,17 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from clases.models import Clase
+from clases.models import Clase, ClaseMembership
 
 class ClaseSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(required=False, allow_null=True, write_only=True)
     imagen_url = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
+    #students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    students_info = serializers.SerializerMethodField()
     
     class Meta:
         model = Clase
-        fields = ['id', 'name', 'description', 'teacher', 'teacher_name', 'imagen', 'imagen_url', 'created_at']
+        fields = ['id', 'name', 'description', 'teacher', 'teacher_name', 'imagen', 'imagen_url', 'created_at', 'students_info']
         read_only_fields = ['id', 'teacher', 'created_at', 'imagen_url']
     
     def get_imagen_url(self, obj):
@@ -28,6 +30,7 @@ class ClaseSerializer(serializers.ModelSerializer):
             elif hasattr(teacher, 'first_name') and teacher.first_name:
                 return f"{teacher.last_name} {teacher.first_name}"
         return teacher.username or str(teacher)
+
     
     def create(self, validated_data):
         imagen = validated_data.pop('imagen', None)
@@ -42,3 +45,16 @@ class ClaseSerializer(serializers.ModelSerializer):
             clase.save()
         
         return clase
+    
+    def get_students_info(self, obj):
+        memberships = ClaseMembership.objects.filter(clase=obj)
+        members_data = []
+        for membership in memberships:
+            members_data.append({
+                'user_id': membership.user.id,
+                'username': membership.user.username,
+                'email': membership.user.email,
+                'role': membership.role,
+                'joined_at': membership.joined_at
+            })
+        return members_data

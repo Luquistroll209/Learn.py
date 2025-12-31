@@ -14,6 +14,8 @@
     let clase: any[] = [];
     import { page } from '$app/stores';
     import { classicNameResolver } from 'typescript';
+    let students: any[] = [];
+    let teachers: any[] = [];
     let id;
 	$: id = $page.params.id;
     
@@ -47,9 +49,25 @@
             if (respose.ok){
               
               
-              clase = data || [];    
-              console.log(clase);
-              
+                clase = data || [];    
+                console.log(clase)
+                for (let i = 0; i < clase.students_info.length; i++) {
+                    if (clase.students_info[i].role === "student") {
+                        const studentWithAvatar = {
+                            ...clase.students_info[i],
+                            avatar: `${clase.students_info[i].username.charAt(0)}`.toUpperCase()
+                        };
+                        
+                        students.push(studentWithAvatar);
+                    } else if (clase.students_info[i].role === "teacher" || clase.students_info[i].role === "assistant" ){
+                        const TeachersWithAvatar = {
+                            ...clase.students_info[i],
+                            avatar: `${clase.students_info[i].username.charAt(0)}`.toUpperCase()
+                        };
+                        
+                        teachers.push(TeachersWithAvatar);
+                    }
+                }//teachers
             }/*else{
                 showAlert("Error", "Error", "red");
             }*/
@@ -80,13 +98,14 @@
         { task: 'Examen Tema 1', grade: '8.0', maxGrade: '10', percentage: '80%', date: '5 Dic' },
         { task: 'Participación en clase', grade: '10', maxGrade: '10', percentage: '100%', date: '30 Nov' }
     ];
-    
+    /*
     const students = [
         { id: 1, name: 'Ana Martínez', email: 'ana@example.com', avatar: 'AM' },
         { id: 2, name: 'Carlos López', email: 'carlos@example.com', avatar: 'CL' },
         { id: 3, name: 'María García', email: 'maria@example.com', avatar: 'MG' },
         { id: 4, name: 'Juan Pérez', email: 'juan@example.com', avatar: 'JP' }
     ];
+    */
 </script>
 
 
@@ -167,13 +186,15 @@
                 <div class="card-title">
                     Profesores
                 </div>
-                <div class="student-item">
-                    <div class="avatar">PG</div>
-                    <div class="student-info">
-                        <div class="student-name">Prof. María García</div>
-                        <div class="student-email">maria.garcia@universidad.edu</div>
+                {#each teachers as teacher}
+                    <div class="student-item">
+                        <div class="avatar">{teacher.avatar}</div>
+                        <div class="student-info">
+                            <div class="student-name">{teacher.username}</div>
+                            <div class="student-email">{teacher.email}</div>
+                        </div>
                     </div>
-                </div>
+                {/each}
                 
                 <div class="card-title" style="margin-top: 24px;">
                     Estudiantes ({students.length})
@@ -182,7 +203,7 @@
                     <div class="student-item">
                         <div class="avatar">{student.avatar}</div>
                         <div class="student-info">
-                            <div class="student-name">{student.name}</div>
+                            <div class="student-name">{student.username}</div>
                             <div class="student-email">{student.email}</div>
                         </div>
                     </div>
@@ -262,7 +283,7 @@
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;">
                     Ver calendario
                 </button>
-                <a href="/clases/clase-[id]/dashboard" class="secondary-button" style="width: 100%;">
+                <a href="/clases/clase-{id}/dashboard" class="secondary-button" style="width: 100%;">
                     Configuración
                 </a>
             </div>
