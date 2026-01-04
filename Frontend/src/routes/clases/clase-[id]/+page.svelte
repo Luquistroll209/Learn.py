@@ -14,6 +14,7 @@
     let clase: any[] = [];
     import { page } from '$app/stores';
     import { classicNameResolver } from 'typescript';
+    import { invalidate } from '$app/navigation';
     let students: any[] = [];
     let teachers: any[] = [];
     let id;
@@ -72,6 +73,10 @@
                 showAlert("Error", "Error", "red");
             }*/
     }
+    function invite(type){
+        //if ()
+        
+    }
 
     const announcements = [
         { id: 1, author: 'Profesor1', title: 'Bienvenidos al curso', date: '15 Dic', content: 'Bienvenidos a la clase de Programación Web. Espero que tengamos un gran semestre.', avatar: 'PG' },
@@ -108,7 +113,11 @@
     */
 </script>
 
-
+<div class="inviteSection">
+    <h2>Invitar a profesor</h2>
+    <input type="text">
+    <input type="button" value="enviar">
+</div>
 
 <div class="class-container">
     <div class="class-header">
@@ -183,9 +192,11 @@
             {/if}
             
             {#if activeTab === 'personas'}
-                <div class="card-title">
+                <div class="card-title">    
                     Profesores
+                    <button on:click={invite("teacher")} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
                 </div>
+                
                 {#each teachers as teacher}
                     <div class="student-item">
                         <div class="avatar">{teacher.avatar}</div>
