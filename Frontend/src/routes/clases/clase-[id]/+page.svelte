@@ -1,6 +1,9 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import type { PageLoad } from './$types';
+    import { showAlert } from '$lib/store/alertStore.js';
+    import Alert from '$lib/components/alert.svelte';
+
     
     let activeTab = 'tablón';
     let showTaskModal = false;
@@ -18,7 +21,15 @@
     let students: any[] = [];
     let teachers: any[] = [];
     let id;
+    
+    let showInviteModal = false;
 	$: id = $page.params.id;
+
+    let areYouTeacher = false;
+    let username = null;
+
+    let inviteEmail = '';
+    
     
     onMount(() => {
         if (browser) {
@@ -35,6 +46,14 @@
 
     async function loadClass(){
         const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('userData');
+        /*
+        if (userData) {
+            const user = JSON.parse(userData);
+            username = `${user.name}`;
+        }  
+        console.log(username);
+        */
         
         const respose = await fetch(`${urlip}class/obtainClassByID/${id}`, {
                 method: 'get',
@@ -73,10 +92,7 @@
                 showAlert("Error", "Error", "red");
             }*/
     }
-    function invite(type){
-        //if ()
-        
-    }
+
 
     const announcements = [
         { id: 1, author: 'Profesor1', title: 'Bienvenidos al curso', date: '15 Dic', content: 'Bienvenidos a la clase de Programación Web. Espero que tengamos un gran semestre.', avatar: 'PG' },
@@ -111,13 +127,73 @@
         { id: 4, name: 'Juan Pérez', email: 'juan@example.com', avatar: 'JP' }
     ];
     */
+    async function invitarAlumno() {
+        if (!inviteEmail) return;
+        
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await fetch(`${urlip}class/invite/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `${token}`
+                },
+                body: JSON.stringify({
+                    clase_id: id, 
+                    email: inviteEmail 
+                })
+            });
+            
+            if (response.ok) {
+                showAlert("Usuario invitado con exito", inviteEmail, "green");
+
+                inviteEmail = '';
+                showInviteModal = false;
+                //  await loadAlumnos(token!);
+            } else {
+                const errorData = await response.json();
+                showAlert("Error", errorData.Error, "red");
+                
+
+
+            }
+        } catch (error) {
+            //console.error('Error:', error);
+            alert('Error al enviar la invitación');
+        }
+    }
+    
 </script>
 
-<div class="inviteSection">
-    <h2>Invitar a profesor</h2>
-    <input type="text">
-    <input type="button" value="enviar">
-</div>
+
+{#if showInviteModal}
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div class="card" style="width: 90%; max-width: 500px;">
+            <div class="card-title">
+                Invitar Alumno
+                <button on:click={() => showInviteModal = false} style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            <div style="padding: 16px;">
+                <p style="margin-bottom: 16px; color: var(--text-light);">Envía una invitación por correo electrónico para unirse a la clase.</p>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Correo Electrónico</label>
+                    <input type="email" bind:value={inviteEmail} 
+                           style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;" 
+                           placeholder="alumno@ejemplo.com" />
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="secondary-button" on:click={() => showInviteModal = false}>
+                        Cancelar
+                    </button>
+                    <button class="action-button" on:click={invitarAlumno}>
+                        Enviar Invitación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
 
 <div class="class-container">
     <div class="class-header">
@@ -194,7 +270,7 @@
             {#if activeTab === 'personas'}
                 <div class="card-title">    
                     Profesores
-                    <button on:click={invite("teacher")} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
+                    <button on:click={() => showInviteModal = true} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
                 </div>
                 
                 {#each teachers as teacher}
