@@ -15,15 +15,18 @@
     import { redirect } from '@sveltejs/kit';
     import { urlip } from '$lib/config';
     let clase: any[] = [];
-    import { page } from '$app/stores';
+    
     import { classicNameResolver } from 'typescript';
     import { invalidate } from '$app/navigation';
     let students: any[] = [];
     let teachers: any[] = [];
+    //variables y objetos para obtener la ID
+    import { page } from '$app/stores';
     let id;
-    
+    $: id = $page.params.id;
+
     let showInviteModal = false;
-	$: id = $page.params.id;
+	
 
     let areYouTeacher = false;
     let username = null;

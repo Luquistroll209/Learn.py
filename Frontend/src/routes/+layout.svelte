@@ -14,7 +14,7 @@
 	</main>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<div class="page-footer">
-		<p>© 2024 Learn.py - Todos los derechos reservados</p>
+		<p>© 2026 Learn.py - Todos los derechos reservados</p>
 		<div class="footer-links">
 			<a href="/privacy">Privacidad</a>
 			<a href="/terms">Términos</a>

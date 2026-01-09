@@ -259,7 +259,28 @@ class JoinClassAutoView(APIView):
         try:
             clase = Clase.objects.get(id=clase_id)
             if clase.students.filter(id=user.id).exists():
-                return Response({'Error': 'Ya estás en esta clase'}, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    membership = ClaseMembership.objects.get(user=user, clase=clase)
+                    serializer = ClaseSerializer(clase)
+
+                    student_info = next(
+                        (s for s in serializer.data['students_info'] 
+                        if s['user_id'] == user.id),
+                        None
+                    )
+                    
+                    return Response({
+                        'message': 'Ya estás en esta clase',
+                        'unionDate': student_info['joined_at'] if student_info else None,
+                        'role': membership.role,
+                        'teacherName': serializer.data['teacher_name'],
+                        'className': serializer.data['name'],
+
+                        #'clase': serializer.data,
+                        
+                    }, status=status.HTTP_200_OK)
+                except ClaseMembership.DoesNotExist:
+                    pass
             clase_membership = ClaseMembership.objects.create(
                 user=user,
                 clase=clase,
