@@ -51,6 +51,7 @@ class Clase(models.Model):
         related_name='clases_inscritas', 
         blank=True
     )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     
     
@@ -94,3 +95,27 @@ class ClaseMembership(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.clase.name} ({self.role})"
+
+#Funcion para los anuncios de la tabla de las clases
+class Announcement(models.Model):
+    clase = models.ForeignKey(
+        Clase, 
+        on_delete=models.CASCADE, 
+        related_name='announcements'
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='announcements_created'
+    )
+    #Para las urls de las fotos almacenadas en el backd (no funciona aun y terminar)
+    photos = models.JSONField(default=list, blank=True)
+    #Para las urls
+    urls = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.clase.name}"

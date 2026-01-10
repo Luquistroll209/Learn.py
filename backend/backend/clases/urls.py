@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import obtainClass, CreateClassView, inviteUser, JoinClassAutoView, obtainClassByID
+from .views import obtainClass, CreateClassView, inviteUser, JoinClassAutoView, obtainClassByID, CreateAnnouncementView
 
 urlpatterns = [
     #URLs - obtención de datos
@@ -11,4 +11,8 @@ urlpatterns = [
     #Invitaciones y unirse a clases
     path('invite/', inviteUser.as_view(), name='invite-user'),
     path('join/<str:clase_id>/', JoinClassAutoView.as_view(), name='join-class-auto'),
+
+    #Post de clases
+    path('createAnnouncement/', CreateAnnouncementView.as_view(), name='create-announcement'),
+
 ]

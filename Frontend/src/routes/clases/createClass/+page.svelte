@@ -56,22 +56,23 @@
             const data = await response.json();
             
             if (response.ok) {
-                alert('Clase creada exitosamente');
-                console.log(formData);
+                showAlert("",'Clase creada exitosamente', "green");
                 className = '';
                 classDescription = '';
                 selectedImage = null;
                 imagePreview = '';
+                window.location.href = '/clases';
+
                 
                 const fileInput = document.getElementById('classImage') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
                 
             } else {
-                alert(`Error: ${data.Error || 'No se pudo crear la clase'}`);
+                showAlert("Error", `${data.Error || 'No se pudo crear la clase'}`, "red");
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al conectar con el servidor');
+            showAlert('Error al conectar con el servidor');
         }
     }
 

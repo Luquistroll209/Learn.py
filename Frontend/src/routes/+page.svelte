@@ -21,15 +21,15 @@
 		
 		<div class="hero-stats">
 			<div class="stat">
-				<div class="stat-number">24/7</div>
+				<div class="stat-number"><i class="fas fa-clock"></i></div>
 				<div class="stat-label">Disponibilidad</div>
 			</div>
 			<div class="stat">
-				<div class="stat-number">⚡</div>
+				<div class="stat-number"><i class="fas fa-bolt"></i></div>
 				<div class="stat-label">Intuitivo</div>
 			</div>
 			<div class="stat">
-				<div class="stat-number">🔒</div>
+				<div class="stat-number"><i class="fas fa-shield-alt"></i></div>
 				<div class="stat-label">Seguro</div>
 			</div>
 		</div>
@@ -41,13 +41,13 @@
 		<p>Comienza ahora sin complicaciones</p>
 		<div class="cta-buttons">
 			<a href="/auth?type=register&role=teacher" class="btn btn-primary">
-				👨‍🏫 Soy Profesor
+				<i class="fas fa-chalkboard-teacher"></i> Soy Profesor
 			</a>
 			<a href="/auth?type=register&role=student" class="btn btn-secondary">
-				🎓 Soy Estudiante
+				<i class="fas fa-graduation-cap"></i> Soy Estudiante
 			</a>
 			<a href="/demo" class="btn btn-outline">
-				🎬 Ver Demo Gratis
+				<i class="fas fa-play-circle"></i> Ver Demo Gratis
 			</a>
 		</div>
 	</div>
@@ -60,63 +60,63 @@
 	
 	<div class="welcome-features">
 		<div class="feature-card">
-			<div class="feature-icon">🏫</div>
+			<div class="feature-icon"><i class="fas fa-school"></i></div>
 			<h3 class="feature-title">Gestión de Clases</h3>
 			<p class="feature-description">
 				Crea y organiza tus clases, materias y horarios fácilmente. Invita estudiantes, 
 				comparte materiales y gestiona todo desde un panel intuitivo.
 			</p>
-			<a href="/features#classes" class="feature-link">Ver más →</a>
+			<a href="/features#classes" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 		
 		<div class="feature-card">
-			<div class="feature-icon">📚</div>
+			<div class="feature-icon"><i class="fas fa-book"></i></div>
 			<h3 class="feature-title">Sistema de Tareas</h3>
 			<p class="feature-description">
 				Asigna ejercicios con fechas límite, recibe entregas, califica automáticamente 
 				y proporciona retroalimentación personalizada.
 			</p>
-			<a href="/features#assignments" class="feature-link">Ver más →</a>
+			<a href="/features#assignments" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 		
 		<div class="feature-card">
-			<div class="feature-icon">📊</div>
+			<div class="feature-icon"><i class="fas fa-chart-line"></i></div>
 			<h3 class="feature-title">Seguimiento en Tiempo Real</h3>
 			<p class="feature-description">
 				Monitorea el progreso de cada estudiante, genera reportes automáticos 
 				y detecta oportunidades de mejora inmediatamente.
 			</p>
-			<a href="/features#analytics" class="feature-link">Ver más →</a>
+			<a href="/features#analytics" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 		
 		<div class="feature-card">
-			<div class="feature-icon">💬</div>
+			<div class="feature-icon"><i class="fas fa-comments"></i></div>
 			<h3 class="feature-title">Comunicación Directa</h3>
 			<p class="feature-description">
 				Chatea con estudiantes, comparte archivos, envía anuncios y recibe 
 				notificaciones instantáneas. Todo en tiempo real.
 			</p>
-			<a href="/features#communication" class="feature-link">Ver más →</a>
+			<a href="/features#communication" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 		
 		<div class="feature-card">
-			<div class="feature-icon">📱</div>
+			<div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
 			<h3 class="feature-title">Acceso Multidispositivo</h3>
 			<p class="feature-description">
 				Funciona perfectamente en computadoras, tablets y móviles. 
 				Accede a tus clases desde cualquier lugar, en cualquier momento.
 			</p>
-			<a href="/features#mobile" class="feature-link">Ver más →</a>
+			<a href="/features#mobile" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 		
 		<div class="feature-card">
-			<div class="feature-icon">🎯</div>
+			<div class="feature-icon"><i class="fas fa-bullseye"></i></div>
 			<h3 class="feature-title">Sin Curva de Aprendizaje</h3>
 			<p class="feature-description">
 				Interfaz tan simple que no necesitas capacitación. Enfócate en enseñar, 
 				nosotros nos encargamos de la tecnología.
 			</p>
-			<a href="/features#easy" class="feature-link">Ver más →</a>
+			<a href="/features#easy" class="feature-link">Ver más <i class="fas fa-arrow-right"></i></a>
 		</div>
 	</div>
 	
@@ -157,13 +157,13 @@
 		</p>
 		
 		<div class="pricing-highlights">
-			<div class="pricing-feature">✓ Plan Gratis: Clases ilimitadas</div>
-			<div class="pricing-feature">✓ Plan Premium: Soporte prioritario</div>
+			<div class="pricing-feature"><i class="fas fa-check"></i> Plan Gratis: Clases ilimitadas</div>
+			<div class="pricing-feature"><i class="fas fa-check"></i> Plan Premium: Soporte prioritario</div>
 		</div>
 		
 		<div class="cta-buttons">
 			<a href="/auth?type=register" class="btn btn-primary btn-large">
-				🚀 Comenzar Gratis
+				<i class="fas fa-rocket"></i> Comenzar Gratis
 			</a>
 			<a href="/pricing" class="btn btn-secondary">
 				Ver Planes y Precios
@@ -198,19 +198,19 @@
 			<h4 class="tech-title">Construido con tecnología moderna</h4>
 			<div class="tech-icons">
 				<div class="tech-icon">
-					<div class="icon">D</div>
+					<div class="icon"><i class="fab fa-python"></i></div>
 					<span>Django</span>
 				</div>
 				<div class="tech-icon">
-					<div class="icon">S</div>
+					<div class="icon"><i class="fas fa-code"></i></div>
 					<span>Svelte</span>
 				</div>
 				<div class="tech-icon">
-					<div class="icon">⚡</div>
+					<div class="icon"><i class="fas fa-bolt"></i></div>
 					<span>Rápido</span>
 				</div>
 				<div class="tech-icon">
-					<div class="icon">🔒</div>
+					<div class="icon"><i class="fas fa-shield-alt"></i></div>
 					<span>Seguro</span>
 				</div>
 			</div>
@@ -219,7 +219,7 @@
 		<div class="contact-promo">
 			<h4>¿Tienes preguntas específicas?</h4>
 			<p>Nuestro equipo está aquí para ayudarte</p>
-			<a href="/contact" class="btn btn-outline">📧 Contactar Soporte</a>
+			<a href="/contact" class="btn btn-outline"><i class="fas fa-envelope"></i> Contactar Soporte</a>
 		</div>
 	</div>
 	

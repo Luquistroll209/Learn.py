@@ -1,17 +1,71 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from clases.models import Clase, ClaseMembership
+from clases.models import Clase, ClaseMembership, Announcement
 
+#serializer para los anuncios de clase
+class AnnouncementSerializer(serializers.ModelSerializer):
+    creator_info = serializers.SerializerMethodField()
+    is_teacher = serializers.SerializerMethodField()
+    clase_id = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = Announcement
+        fields = [
+            'id', 
+            'title', 
+            'clase_id',
+            'description', 
+            'photos', 
+            'urls', 
+            'creator_info',
+            'is_teacher',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        clase_id = validated_data.pop('clase_id')
+        clase = Clase.objects.get(id=clase_id)
+        user = self.context['user']
+        
+        announcement = Announcement.objects.create(
+            clase=clase,
+            created_by=user,
+            **validated_data
+        )
+        return announcement
+    
+    def get_creator_info(self, obj):
+        creator = obj.created_by
+        return {
+            'id': creator.id,
+            'username': creator.username,
+            'first_name': creator.first_name or '',
+            'last_name': creator.last_name or '',
+            'email': creator.email
+        }
+    
+    def get_is_teacher(self, obj):
+        try:
+            membership = ClaseMembership.objects.get(
+                user=obj.created_by,
+                clase=obj.clase
+            )
+            return membership.role == 'teacher'
+        except ClaseMembership.DoesNotExist:
+            return False
+        
 class ClaseSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(required=False, allow_null=True, write_only=True)
     imagen_url = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
     #students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     students_info = serializers.SerializerMethodField()
+    announcements = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     
     class Meta:
         model = Clase
-        fields = ['id', 'name', 'description', 'teacher', 'teacher_name', 'imagen', 'imagen_url', 'created_at', 'students_info']
+        fields = ['id', 'name', 'description', 'teacher', 'teacher_name', 'imagen', 'imagen_url', 'created_at', 'students_info', 'announcements']
         read_only_fields = ['id', 'teacher', 'created_at', 'imagen_url']
     
     def get_imagen_url(self, obj):

@@ -63,7 +63,7 @@
     function handleResize() {
         if (browser) {
             isSmallscreen = window.innerWidth <= 1260;
-            console.log('Es pantalla pequeña:', isSmallscreen);
+            //console.log('Es pantalla pequeña:', isSmallscreen);
             
             // Cerrar menús al cambiar tamaño de pantalla
             if (window.innerWidth > 768) {

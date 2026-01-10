@@ -6,8 +6,8 @@ from users.models import User
 from rest_framework.response import Response
 from clases.models import Clase
 from rest_framework import status
-from .serializers import ClaseSerializer
-from .models import ClaseMembership
+from .serializers import ClaseSerializer, AnnouncementSerializer
+from .models import ClaseMembership, Announcement
 from users.views import get_user_from_token
 from django.conf import settings
 
@@ -298,3 +298,78 @@ class JoinClassAutoView(APIView):
             
         except Clase.DoesNotExist:
             return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+#para añadir anuncios
+class CreateAnnouncementView(APIView):
+    def post(self, request):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        token_key = header
+        
+        if not token_key:
+            return Response(
+                {'Error': 'Token no proporcionado'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user = get_user_from_token(token_key)
+        
+        if not user:
+            return Response(
+                {'Error': 'Usuario no encontrado'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        data = request.data.copy()
+        
+        if 'clase_id' not in data:
+            return Response(
+                {'Error': 'clase_id es requerido'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if 'title' not in data or not data['title']:
+            return Response(
+                {'Error': 'title es requerido'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if 'description' not in data or not data['description']:
+            return Response(
+                {'Error': 'description es requerido'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if 'photos' not in data:
+            data['photos'] = []
+        
+        if 'urls' not in data:
+            data['urls'] = []
+
+        serializer = AnnouncementSerializer(
+            data=data,
+            context={'user': user, 'request': request}
+        )
+        
+        if serializer.is_valid():
+            announcement = serializer.save()
+            response_serializer = AnnouncementSerializer(
+                announcement, 
+                context={'request': request}
+            )
+            
+            return Response({
+                'message': 'Anuncio creado exitosamente',
+                'announcement': response_serializer.data
+            }, status=status.HTTP_201_CREATED)
+            """    
+            except serializers.ValidationError as e:
+                return Response(
+                    {'Error': 'Error de validación', 'details': e.detail}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            """
+        else:
+            return Response(
+                {'Error': 'Datos inválidos', 'details': serializer.errors}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )

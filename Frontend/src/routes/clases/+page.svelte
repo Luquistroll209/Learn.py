@@ -259,7 +259,7 @@
                                         
                                         <div class="clase-header-overlay">
                                             <h3 class="clase-title">{clase.name}</h3>
-                                            <p class="clase-section">Sección {clase.section || 'A'}</p>
+                                            
                                             <p class="clase-teacher">{clase.teacher_name || clase.teacher}</p>
                                         </div>
                                         
