@@ -64,7 +64,7 @@ source venv/bin/activate
 ```
 ## Instalar dependencias de Python
 ```bash
-pip install djangorestframework djangorestframework-simplejwt django-cors-headers
+pip install djangorestframework djangorestframework-simplejwt django-cors-headers pillow
 ````
 ## Iniciar proyecto
 Windows:
