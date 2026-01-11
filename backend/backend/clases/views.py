@@ -29,10 +29,13 @@ class CreateClassView(APIView):
         if not user:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        data = request.data.copy()
+        data = request.data
 
         if 'id' in data:
-            del data['id']    
+            if hasattr(data, '_mutable'):
+                data._mutable = True
+                del data['id']
+                data._mutable = False
         
         serializer = ClaseSerializer(
             data=data,

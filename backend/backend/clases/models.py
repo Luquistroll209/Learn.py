@@ -44,7 +44,7 @@ class Clase(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clases_creadas')
-    imagen = models.ImageField(upload_to='clases/temp/', null=True, blank=True)
+    imagen = models.ImageField(upload_to='clases/', null=True, blank=True)
     students = models.ManyToManyField(
         User, 
         through='ClaseMembership',
@@ -73,7 +73,7 @@ class Clase(models.Model):
 
             file_extension = os.path.splitext(self.imagen.name)[1]
             new_filename = f'portada{file_extension}'
-            self.imagen.name = f'clases/clase_{self.id}/{new_filename}'
+            self.imagen.name = f'clase_{self.id}/{new_filename}'
             super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
