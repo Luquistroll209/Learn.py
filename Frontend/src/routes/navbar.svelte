@@ -216,9 +216,6 @@
         <li class="nav-item">
             <a href="/" class="nav-link active" on:click={handleNavLinkClick}>Inicio</a>
         </li>
-        <!--<li class="nav-item">
-            <a href="/about" class="nav-link" on:click={handleNavLinkClick}>Sobre nosotros</a>
-        </li>-->
         <li class="nav-item">
             <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Clases</a>
         </li>
@@ -227,6 +224,9 @@
                 <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Tareas</a>
             </li>
         {/if}
+        <li class="nav-item">
+            <a href="/soporte" class="nav-link" on:click={handleNavLinkClick}>Soporte</a>
+        </li>
     </ul>
     
     <div class="navbar-actions">

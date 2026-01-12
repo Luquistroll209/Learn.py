@@ -16,9 +16,9 @@
 	<div class="page-footer">
 		<p>© 2026 Learn.py - Todos los derechos reservados</p>
 		<div class="footer-links">
-			<a href="/privacy">Privacidad</a>
-			<a href="/terms">Términos</a>
-			<a href="/">Sobre Nosotros</a>
+			<a href="/privacidad">Privacidad</a>
+			<a href="/tos">Términos</a>
+			<a href="/soporte">Soporte</a>
 		</div>
 	</div>
 </div>

@@ -106,7 +106,7 @@
     
     <div class="form-options">
         <label class="remember-me">
-            <input type="checkbox" required /> Acepto los términos y condiciones
+            <input type="checkbox" required /> <a class="auth-switch-link" href="/tos">Acepto los términos y condiciones</a>
         </label>
     </div>
     
