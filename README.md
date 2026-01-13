@@ -3,7 +3,7 @@
 **Final Class Project**  
 **Course:** 2ºSMR  
 
-Visit the platform here: lt209.ddns.net:2000
+Visit the platform here: [lt209.ddns.net:2000](http://lt209.ddns.net:2000)
 ---
 
 ## Project Description
