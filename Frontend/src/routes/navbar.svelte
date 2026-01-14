@@ -272,8 +272,8 @@
                                 <div class="notification-item {notification.read ? 'read' : 'unread'}" on:click={() => markAsRead(notification.id)}>
                                     {/*<div class="notification-from">{notification.from}</div>*/} <!--Esto no funciona tengo que cambiar el backend-->
                                     <div class="notification-subject">{notification.subject}</div>
-                                    <div class="notification-message">{notification.message}</div>
-                                    {/*<div class="notification-time">{notification.created_at}</div>*/}
+                                    {/*<div class="notification-message">{notification.message}</div>*/}
+                                    <div class="notification-time">{notification.created_at}</div>
                                     {#if !notification.read}
                                         <div class="notification-dot"></div>
                                     {/if}
