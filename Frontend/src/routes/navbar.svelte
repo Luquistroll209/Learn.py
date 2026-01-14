@@ -203,7 +203,7 @@
 <Alert />
 
 <!-- Overlay para móvil -->
-<div class="mobile-overlay {mobileMenuOpen ? 'active' : ''}" on:click={closeMobileMenu}></div>
+<div class="mobile-overlay {mobileMenuOpen ? 'active' : ''}" role="button" tabindex="0" on:keydown={closeMobileMenu} on:click={closeMobileMenu}></div>
 
 <nav class="navbar">
     <div class="navbar-brand">
@@ -269,10 +269,10 @@
                         <a class="RedactButton" href="/notifications">Redactar</a>
                         <div class="notifications-list">
                             {#each notifications as notification (notification.id)}
-                                <div class="notification-item {notification.read ? 'read' : 'unread'}" on:click={() => markAsRead(notification.id)}>
-                                    {/*<div class="notification-from">{notification.from}</div>*/} <!--Esto no funciona tengo que cambiar el backend-->
+                                <div class="notification-item {notification.read ? 'read' : 'unread'}" role="button" tabindex="0" on:keydown={() => markAsRead(notification.id)} on:click={() => markAsRead(notification.id)}>
+                                    <div class="notification-from">{notification.from}</div> <!--Esto no funciona tengo que cambiar el backend-->
                                     <div class="notification-subject">{notification.subject}</div>
-                                
+                                    <div class="notification-message">{notification.message}</div>
                                     <div class="notification-time">{notification.created_at}</div>
                                     {#if !notification.read}
                                         <div class="notification-dot"></div>

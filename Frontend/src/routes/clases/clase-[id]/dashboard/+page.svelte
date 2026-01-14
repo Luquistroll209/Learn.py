@@ -373,11 +373,11 @@
                             <h3 style="margin-bottom: 12px; color: var(--text-color);">Información de la Clase</h3>
                             <div style="display: grid; gap: 12px;">
                                 <div>
-                                    <label style="display: block; margin-bottom: 4px; color: var(--text-light);">Nombre de la Clase</label>
+                                    <label for="NombreClase" style="display: block; margin-bottom: 4px; color: var(--text-light);">Nombre de la Clase</label>
                                     <input type="text" value={clase.name} style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;" />
                                 </div>
                                 <div>
-                                    <label style="display: block; margin-bottom: 4px; color: var(--text-light);">Descripción</label>
+                                    <label for="Descripción" style="display: block; margin-bottom: 4px; color: var(--text-light);">Descripción</label>
                                     <textarea style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; min-height: 100px;">
                                         {clase.description}
                                     </textarea>
@@ -478,7 +478,7 @@
             <div style="padding: 16px;">
                 <p style="margin-bottom: 16px; color: var(--text-light);">Envía una invitación por correo electrónico para unirse a la clase.</p>
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Correo Electrónico</label>
+                    <label for="inviteEmail" style="display: block; margin-bottom: 8px; color: var(--text-color);">Correo Electrónico</label>
                     <input type="email" bind:value={inviteEmail} 
                            style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;" 
                            placeholder="alumno@ejemplo.com" />
@@ -507,24 +507,26 @@
             <div style="padding: 16px;">
                 <div style="display: grid; gap: 16px; margin-bottom: 20px;">
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Título *</label>
+                        <label for="titulo" style="display: block; margin-bottom: 8px; color: var(--text-color);">
+                            Título *
+                        </label>
                         <input type="text" bind:value={newTask.title} 
                                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;" 
                                placeholder="Nombre de la tarea" />
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Descripción</label>
+                        <label for="Descripción" style="display: block; margin-bottom: 8px; color: var(--text-color);">Descripción</label>
                         <textarea bind:value={newTask.description} 
                                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; min-height: 100px;"
                                   placeholder="Descripción detallada de la tarea"></textarea>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Fecha Límite *</label>
+                        <label for="Fecha_Limite" style="display: block; margin-bottom: 8px; color: var(--text-color);">Fecha Límite *</label>
                         <input type="date" bind:value={newTask.dueDate} 
                                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;" />
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-color);">Puntuación Máxima</label>
+                        <label for="Puntuación Máximo" style="display: block; margin-bottom: 8px; color: var(--text-color);">Puntuación Máxima</label>
                         <input type="number" bind:value={newTask.maxGrade} min="1" max="100"
                                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;" />
                     </div>

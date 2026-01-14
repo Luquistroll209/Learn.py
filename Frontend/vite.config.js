@@ -12,12 +12,12 @@ export default defineConfig({
 		proxy: {
 		// Proxy para API
 		'/api': {
-			target: 'http://localhost:8000',
+			target: 'http://lt209.ddns.net:2001',
 			changeOrigin: true,
 		},
 		// Proxy para archivos multimedia
 		'/media': {
-			target: 'http://localhost:8000',
+			target: 'http://lt209.ddns.net:2001',
 			changeOrigin: true,
 		}
 		}
