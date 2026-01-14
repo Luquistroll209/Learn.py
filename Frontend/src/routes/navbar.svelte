@@ -87,6 +87,7 @@
 
             const data = await respose.json();
             notifications = data.notifications;
+            console.log(notifications);
             unreadNotifications = data.notifications.length;
             
             if (respose.ok){
@@ -269,10 +270,10 @@
                         <div class="notifications-list">
                             {#each notifications as notification (notification.id)}
                                 <div class="notification-item {notification.read ? 'read' : 'unread'}" on:click={() => markAsRead(notification.id)}>
-                                    <div class="notification-from">{notification.from}</div>
+                                    <!--<div class="notification-from">{notification.from}</div>--> <!--Esto no funciona tengo que cambiar el backend-->
                                     <div class="notification-subject">{notification.subject}</div>
                                     <div class="notification-message">{notification.message}</div>
-                                    <div class="notification-time">{notification.time}</div>
+                                    <div class="notification-time">{notification.created_at}</div>
                                     {#if !notification.read}
                                         <div class="notification-dot"></div>
                                     {/if}
