@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
     import { redirect } from '@sveltejs/kit';
-    import { urlip } from '$lib/config';
+    import { urlip, urlMedia } from '$lib/config';
     import imgDefault from '$lib/images/classDefault.webp';
     import type { PageLoad } from './$types';
     import '$lib/style/Clases.css'
@@ -251,7 +251,7 @@
                                 <div class="clase-img-container">
                                     <div class="clase-link-overlay" on:click={() => verDetallesClase(clase.id)}>
                                         {#if clase.imagen_url}
-                                            <img src={clase.imagen_url} alt={clase.name} class="portada">
+                                            <img src={urlMedia}{clase.imagen_url} alt={clase.name} class="portada">
                                         {:else}
                                             <div class="default-class-bg" style="background: #1a73e8">
                                             </div>
