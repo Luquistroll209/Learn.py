@@ -110,7 +110,7 @@ class obtainClassByID(APIView):
         return Response(clase, status=status.HTTP_200_OK)
 
         
-
+"""
 class inviteUser(APIView):
     def post(self, request):
         header = request.META.get('HTTP_AUTHORIZATION', '')
@@ -148,7 +148,7 @@ class inviteUser(APIView):
             join_url = settings.IP + f"/api/class/join/{clase.id}/" 
             
             # Mesnaje a enviar
-            mensaje_invitacion = f"""
+            mensaje_invitacion = f
             ¡Has sido invitado a unirte a la clase "{clase.name}"!
             
             Profesor: {user.get_full_name() or user.email}
@@ -157,7 +157,7 @@ class inviteUser(APIView):
             {join_url}
             
             Descripción: {clase.description}
-            """
+            
             
             asunto = f"Invitación a la clase: {clase.name}"
             
@@ -179,6 +179,8 @@ class inviteUser(APIView):
             return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+"""
 
 #Funcion para invitar a un usuario mediante el email
 class inviteUser(APIView):

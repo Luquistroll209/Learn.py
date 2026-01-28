@@ -3,7 +3,9 @@
     import type { PageLoad } from './$types';
     import { showAlert } from '$lib/store/alertStore.js';
     import Alert from '$lib/components/alert.svelte';
+    import "$lib/style/createClass.css"
 
+    
     
     let activeTab = 'tablón';
     let showTaskModal = false;
@@ -13,7 +15,8 @@
     
     import { browser } from '$app/environment';
     import { redirect } from '@sveltejs/kit';
-    import { urlip } from '$lib/config';
+    import { urlip, urlMedia } from '$lib/config';
+
     let clase: any[] = [];
     
     import { classicNameResolver } from 'typescript';
@@ -26,6 +29,7 @@
     $: id = $page.params.id;
 
     let showInviteModal = false;
+    let showCreateNews = false;
 	
 
     let areYouTeacher = false;
@@ -166,6 +170,9 @@
             alert('Error al enviar la invitación');
         }
     }
+    async function createNews(){
+
+    }
     
 </script>
 
@@ -197,13 +204,70 @@
         </div>
     </div>
 {/if}
+{#if showCreateNews}
+    <div class="contain">
+        <div class="form-header">
+            <h2>Nueva Clase</h2>
+            <p>Comienza tu espacio de enseñanza</p>
+        </div>
+        
+        <form>
+            <div class="form-group">
+                <label for="className">Nombre de la Clase</label>
+                <input 
+                    id="className" 
+                    placeholder="Introduce el nombre de la clase" 
+                    type="text" 
+                   
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="classDescription">Descripción</label>
+                <textarea 
+                    id="classDescription" 
+                    placeholder="Describe el propósito y contenido de esta clase..." 
+                    
+                    rows="4"
+                ></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="classImage">Imagen de Portada</label>
+                <div class="image-upload-area">
+                    <input 
+                        id="classImage" 
+                        type="file" 
+                        accept="image/*"
+                    >
+                    <div class="upload-placeholder">
+                        {#if imagePreview}
+                            <img src={imagePreview} alt="Preview" class="image-preview">
+                            <div class="change-image">Cambiar imagen</div>
+                        {:else}
+                            <div class="upload-icon">Subir imagen</div>
+                            <div class="upload-text">Arrastra una imagen o haz clic para seleccionar</div>
+                            <div class="upload-subtext">Recomendado: 1200x630px</div>
+                        {/if}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" on:click={cancelCreation}>Cancelar</button>
+                <button class="send-btn" type="submit">Crear Clase</button>
+            </div>
+        </form>
+    </div>
+{/if}
 
 <div class="class-container">
     <div class="class-header">
         {#if clase.imagen_url === null}
             <div class="portada"><img src={imgDefault} alt="" class="portada" ></div>
         {:else}
-            <div class="portada"><img src={clase.imagen_url} alt="" class="portada" ></div>
+            <div class="portada"><img src={urlMedia}{clase.imagen_url} alt="" class="portada" ></div>
         {/if}
         <div class="class-header-content">
             <h1>{clase.name}</h1>
@@ -227,7 +291,7 @@
             {#if activeTab === 'tablón'}
                 <div class="card-title">
                     Anuncios recientes
-                    <button class="action-button">+ Nuevo anuncio</button>
+                    <button on:click={() => showCreateNews = true}  class="action-button">+ Nuevo anuncio</button>
                 </div>
                 
                 {#each announcements as announcement}

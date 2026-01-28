@@ -1,0 +1,126 @@
+:root {
+  --primary-color: #3a86ff;
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #e0e0e0;
+}
+.page-footer {
+  margin-top: 50px;
+  padding: 30px 20px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-light);
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto 30px;
+}
+
+.footer-section {
+  flex: 1;
+  min-width: 250px;
+  padding: 10px;
+}
+
+.footer-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.footer-tagline {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.footer-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--text-color);
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--border-color);
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.social-links a:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+  }
+  
+  .footer-section {
+    min-width: 100%;
+    text-align: center;
+  }
+  
+  .footer-links {
+    align-items: center;
+  }
+}

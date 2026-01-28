@@ -1,0 +1,42 @@
+:root {
+	--primary: #1a73e8;
+	--gray: #5f6368;
+	--border: #dadce0;
+}
+
+.error-container {
+	min-height: 60vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+	background: #f8f9fa;
+	text-align: center;
+}
+
+.error-code {
+	font-size: 6rem;
+	font-weight: 600;
+	color: var(--primary);
+}
+
+.error-text {
+	color: var(--gray);
+	font-size: 1.1rem;
+}
+
+.btn {
+	padding: 0.7rem 1.5rem;
+	border-radius: 20px;
+	border: 1px solid var(--border);
+	background: white;
+	color: var(--primary);
+	text-decoration: none;
+	font-weight: 500;
+	transition: 0.2s;
+}
+
+.btn:hover {
+	background: #e8f0fe;
+}

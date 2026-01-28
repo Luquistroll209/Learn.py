@@ -53,22 +53,38 @@ def enviar_email_super_basico(asunto, mensaje, destinatario, contexto=None):
         print(f"Error inesperado: {e}")
         return False
 
+
 def enviarMensaje(asunto, mensaje, destinario, email, user):
-        # Creacion de notificación
-    notificación = Notification.objects.create(
+    # Creacion de notificación
+
+    notificacion_sent = Notification.objects.create(
+        to=user,
+        subject=asunto,
+        message=mensaje or '',
+        created_by=user,
+        notification_type='sent'
+    )
+    
+    notificacion_received = Notification.objects.create(
         to=destinario,
         subject=asunto,
         message=mensaje or '',
-        created_by=user
+        created_by=user,
+        notification_type='received'
     )
-        #Enviar mensaje al correo
+    
+    # Enviar mensaje al correo
     enviar_email_super_basico(
-            asunto="Nuevo correo recivido de Learn.py: " + asunto,
-            mensaje=mensaje,
-            destinatario=email
-        )
-    serializer = NotificationSerializer(notificación)
+        asunto="Nuevo correo recibido de Learn.py: " + asunto,
+        mensaje=mensaje,
+        destinatario=email
+    )
+    
+    serializer = NotificationSerializer(notificacion_sent)
     return serializer.data
+
+
+
 #funcion para crear un mensaje 
 class createNotification(APIView):
     def post(self, request):
@@ -124,18 +140,44 @@ class createNotification(APIView):
         return Response(enviarMensaje(subject, message, to_user, to_email, user), status=status.HTTP_201_CREATED)
 
 
+#obtener las notificasciones de todas las del usuario o unicamente una notificación
 class obtainNotifications(APIView):
-    def get(self, request):
+    def get(self, request, id=None):
         header = request.META.get('HTTP_AUTHORIZATION', '')
         Token = header
         user = get_user_from_token(Token)
-
-        if user:
-            serializer = TokenUserInfoSerializer(user)
-            clases_data = serializer.data['notifications']
-            return Response({'notifications': clases_data}, status=status.HTTP_200_OK)
-        else:
+        
+        if not user:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
+        notifications_sent = Notification.objects.filter(to=user, notification_type='sent')
+        notifications_received = Notification.objects.filter(to=user, notification_type='received')
+        
+        all_notifications = notifications_sent | notifications_received
+        all_notifications = all_notifications.order_by('-created_at')
+        
+        serializer = NotificationSerializer(all_notifications, many=True)
+        
+        if not id:
+            #Obtener todas las notificaciones
+
+            return Response({'notifications': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            #Obtener 1 notificación en concreto
+
+            notification = next(
+                (n for n in serializer.data if n['id'] == id),
+                None
+            )
+            
+            if not notification:
+                return Response(
+                    {'Error': 'Notificación no encontrada'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            return Response(notification, status=status.HTTP_200_OK)
+        
 """
 class visto(APIView):
     def get(self, request):

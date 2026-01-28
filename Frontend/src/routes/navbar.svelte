@@ -193,6 +193,9 @@
         });
         unreadNotifications = 0;
     }
+    function goTo(Go){
+        window.location.href = Go;
+    }
 </script>
 
 <svelte:head>
@@ -266,7 +269,7 @@
                             {/if}
 
                         </div>
-                        <a class="RedactButton" href="/notifications">Redactar</a>
+                        <button on:click={goTo("/notifications")} class="RedactButton">Redactar</button>
                         <div class="notifications-list">
                             {#each notifications as notification (notification.id)}
                                 <div class="notification-item {notification.read ? 'read' : 'unread'}" role="button" tabindex="0" on:keydown={() => markAsRead(notification.id)} on:click={() => markAsRead(notification.id)}>
