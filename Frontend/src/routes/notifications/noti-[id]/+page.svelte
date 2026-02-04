@@ -7,6 +7,7 @@
     let notifications: any[] = [];
     let selectedNotification: any = null;
     let loading = false;
+    let is404 = true; 
 
     //variables y objetos para obtener la ID
     import { page } from '$app/stores';
@@ -35,11 +36,13 @@
                 'authorization': `${token}`
             },
         });
-
         const data = await response.json();
-        notifications = data;
-        console.log(notifications);
-        loading = false;
+        if (response.ok){
+            selectedNotification = data;
+            console.log(selectedNotification);
+            loading = false;
+            is404 = false;
+        }
     }
 
     function goBack() {
@@ -57,7 +60,7 @@
                 Cargando notificaciones...
             </div>
         </div>
-    {:else if notifications.length === 0}
+    {:else if is404}
         <div class="redact-noticontainer">
             <div class="redact-notifications-header">
                 <h2>Notificación</h2>
@@ -69,7 +72,7 @@
                 </button>
             </div>
             <div class="redact-empty-state">
-                <p>No hay notificaciones para mostrar</p>
+                <p>404 notificacion no encontrada</p>
             </div>
         </div>
     {:else if selectedNotification}
