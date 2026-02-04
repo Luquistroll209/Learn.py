@@ -11,7 +11,7 @@
 
     //variables y objetos para obtener la ID
     import { page } from '$app/stores';
-    let id;
+    let id: any = null;
     $: id = $page.params.id;
 
     onMount(() => {

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import obtainClass, CreateClassView, inviteUser, JoinClassAutoView, obtainClassByID, CreateAnnouncementView
+from .views import obtainClass, CreateClassView, inviteUser, JoinClassAutoView, obtainClassByID, CreateAnnouncementView, ObtainAnnouncementsView
 
 urlpatterns = [
     #URLs - obtención de datos
@@ -14,5 +14,6 @@ urlpatterns = [
 
     #Post de clases
     path('createAnnouncement/', CreateAnnouncementView.as_view(), name='create-announcement'),
+    path('obtainAnnouncements/<str:clase_id>/', ObtainAnnouncementsView.as_view(), name='obtain-announcements'),
 
 ]

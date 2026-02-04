@@ -10,6 +10,12 @@ from .serializers import ClaseSerializer, AnnouncementSerializer
 from .models import ClaseMembership, Announcement
 from users.views import get_user_from_token
 from django.conf import settings
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from django.core.files.storage import default_storage
+from django.utils.text import get_valid_filename
+import json
+import uuid
+import os
 
 #Funciones de mensajeria
 from notifications.views import enviarMensaje
@@ -306,6 +312,8 @@ class JoinClassAutoView(APIView):
 
 #para añadir anuncios
 class CreateAnnouncementView(APIView):
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
     def post(self, request):
         header = request.META.get('HTTP_AUTHORIZATION', '')
         token_key = header
@@ -324,31 +332,81 @@ class CreateAnnouncementView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        data = request.data.copy()
+        raw_data = request.data.copy()
         
-        if 'clase_id' not in data:
+        if 'clase_id' not in raw_data:
             return Response(
                 {'Error': 'clase_id es requerido'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        if 'title' not in data or not data['title']:
+        if 'title' not in raw_data or not raw_data['title']:
             return Response(
                 {'Error': 'title es requerido'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        if 'description' not in data or not data['description']:
+        if 'description' not in raw_data or not raw_data['description']:
             return Response(
                 {'Error': 'description es requerido'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        if 'photos' not in data:
-            data['photos'] = []
-        
-        if 'urls' not in data:
-            data['urls'] = []
+        clase_id = raw_data.get('clase_id')
+
+        def parse_list(value):
+            if value is None:
+                return []
+            if isinstance(value, list):
+                return value
+            if isinstance(value, str):
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return parsed
+                    return [parsed]
+                except json.JSONDecodeError:
+                    return [value]
+            return list(value)
+
+        urls_list = parse_list(raw_data.get('urls'))
+        existing_photos = parse_list(raw_data.get('photos'))
+
+        # Procesar archivos de imagen
+        uploaded_files = []
+        uploaded_files.extend(request.FILES.getlist('photos'))
+        uploaded_files.extend(request.FILES.getlist('photos[]'))
+        photos_urls = []
+
+        for image in uploaded_files:
+            extension = os.path.splitext(image.name)[1].lower().lstrip('.')
+            if extension not in settings.ALLOWED_IMAGE_EXTENSIONS:
+                return Response(
+                    {'Error': f'Extensión no permitida: {extension}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if image.size > settings.MAX_IMAGE_SIZE:
+                return Response(
+                    {'Error': 'La imagen supera el tamaño permitido'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            safe_name = get_valid_filename(image.name)
+            unique_name = f"{uuid.uuid4().hex}_{safe_name}"
+            relative_path = f"announcements/clase_{clase_id}/{unique_name}"
+            saved_path = default_storage.save(relative_path, image)
+            photos_urls.append(request.build_absolute_uri(default_storage.url(saved_path)))
+
+        if hasattr(raw_data, 'lists'):
+            data = {
+                key: (value[0] if isinstance(value, list) and len(value) == 1 else value)
+                for key, value in raw_data.lists()
+            }
+        else:
+            data = dict(raw_data)
+
+        data['photos'] = existing_photos + photos_urls
+        data['urls'] = urls_list
 
         serializer = AnnouncementSerializer(
             data=data,
@@ -378,3 +436,39 @@ class CreateAnnouncementView(APIView):
                 {'Error': 'Datos inválidos', 'details': serializer.errors}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+# obtener anuncios de una clase
+class ObtainAnnouncementsView(APIView):
+    def get(self, request, clase_id=None):
+        header = request.META.get('HTTP_AUTHORIZATION', '')
+        user = get_user_from_token(header)
+
+        if not user:
+            return Response(
+                {'Error': 'Usuario no encontrado'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not clase_id:
+            return Response(
+                {'Error': 'clase_id es requerido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            clase = Clase.objects.get(id=clase_id)
+        except Clase.DoesNotExist:
+            return Response(
+                {'Error': 'Clase no encontrada'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        announcements = Announcement.objects.filter(clase=clase).order_by('-created_at')
+        serializer = AnnouncementSerializer(
+            announcements,
+            many=True,
+            context={'request': request}
+        )
+
+        return Response({'announcements': serializer.data}, status=status.HTTP_200_OK)
