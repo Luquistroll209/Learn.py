@@ -40,12 +40,9 @@
     */
    let notifications: any[] = [];
     
-    if (browser) {
-        isSmallscreen = window.innerWidth <= 1260;
-        //console.log('Es pantalla pequeña:', isSmallscreen);
-    }
-
     onMount(() => {
+        // Inicializar solo en cliente para evitar desajustes SSR/cliente (hidratación)
+        handleResize();
         checkAuthStatus();
         checkNotification();
         // Agregar listener para resize
@@ -62,11 +59,14 @@
 
     function handleResize() {
         if (browser) {
-            isSmallscreen = window.innerWidth <= 1260;
+            // Fallback extra: en algunos móviles con "sitio de escritorio"/zoom el width puede ser grande.
+            const coarsePointer =
+                typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+            isSmallscreen = window.innerWidth <= 1260 || coarsePointer;
             //console.log('Es pantalla pequeña:', isSmallscreen);
             
             // Cerrar menús al cambiar tamaño de pantalla
-            if (window.innerWidth > 768) {
+            if (!isSmallscreen) {
                 mobileMenuOpen = false;
                 document.body.style.overflow = '';
             }
@@ -208,7 +208,7 @@
 <!-- Overlay para móvil -->
 <div class="mobile-overlay {mobileMenuOpen ? 'active' : ''}" role="button" tabindex="0" on:keydown={closeMobileMenu} on:click={closeMobileMenu}></div>
 
-<nav class="navbar">
+<nav class="navbar" class:smallscreen={isSmallscreen}>
     <div class="navbar-brand">
         <a href="/" class="logo"><img src={logo} alt="Learn.py"></a>
         <a href="https://github.com/Luquistroll209/Learn.py" class="github-link">
@@ -231,6 +231,18 @@
         <li class="nav-item">
             <a href="/soporte" class="nav-link" on:click={handleNavLinkClick}>Soporte</a>
         </li>
+        {#if !islogged && isSmallscreen}
+            <li class="nav-item mobile-auth">
+                <div class="auth-buttons">
+                    <a href="/auth/login" class="auth-btn btn-login" on:click={handleNavLinkClick}>
+                        Iniciar Sesión
+                    </a>
+                    <a href="/auth/register" class="auth-btn btn-register" on:click={handleNavLinkClick}>
+                        Registrarse
+                    </a>
+                </div>
+            </li>
+        {/if}
     </ul>
     
     <div class="navbar-actions">

@@ -458,6 +458,7 @@
     
     .hero-stats {
         gap: 2rem;
+        flex-wrap: wrap;
     }
     
     .stat-number {

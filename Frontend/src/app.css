@@ -17,6 +17,12 @@
 	color: var(--color-text);
 }
 
+html,
+body {
+	max-width: 100%;
+	overflow-x: hidden;
+}
+
 body {
 	min-height: 100vh;
 	margin: 0;

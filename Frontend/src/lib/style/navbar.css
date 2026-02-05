@@ -300,6 +300,111 @@ body {
     display: block;
 }
 
+/*moviles*/
+.navbar.smallscreen {
+    width: 100%;
+    max-width: 100vw;
+}
+
+.navbar.smallscreen .navbar-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.navbar.smallscreen .logo {
+    max-width: 60vw;
+    overflow: hidden;
+}
+
+.navbar.smallscreen .logo img {
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+
+.navbar.smallscreen .navbar-nav {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    transform: translateX(-100%);
+    width: 85vw;
+    max-width: 320px;
+    height: calc(100vh - 70px);
+    background-color: var(--background);
+    flex-direction: column;
+    padding: 20px 0;
+    box-shadow: var(--shadow-heavy);
+    transition: transform 0.3s ease;
+    gap: 0;
+    overflow-y: auto;
+    z-index: 1000;
+    will-change: transform;
+}
+
+.navbar.smallscreen .navbar-nav.active {
+    transform: translateX(0);
+}
+
+.navbar.smallscreen .nav-item {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.navbar.smallscreen .nav-link {
+    width: 100%;
+    height: auto;
+    padding: 16px 24px;
+    border-radius: 0;
+    justify-content: flex-start;
+    font-size: 16px;
+    border: none;
+    margin: 0;
+}
+
+.navbar.smallscreen .nav-link.active::after {
+    display: none;
+}
+
+.navbar.smallscreen .nav-link.active {
+    border-left: 4px solid var(--primary-color);
+    background-color: rgba(26, 115, 232, 0.06);
+}
+
+.navbar.smallscreen .navbar-nav .auth-buttons {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 24px;
+    gap: 12px;
+    margin-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.navbar.smallscreen .navbar-nav .auth-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 25px;
+}
+
+.navbar.smallscreen .menu-toggle {
+    display: flex;
+}
+
+.navbar.smallscreen .desktop-only {
+    display: none !important;
+}
+
+.navbar.smallscreen .navbar-actions .auth-buttons {
+    display: none;
+}
+
+.navbar.smallscreen .user-menu {
+    right: 10px;
+    min-width: 180px;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 
 /* Tablet */
@@ -335,56 +440,29 @@ body {
 }
 
 /* Mobile - Menu Hamburguesa */
-@media (max-width: 768px) {
-    .navbar {
-        padding: 0 16px;
-        height: 64px;
-        border-radius: 0;
-        margin: 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-    }
-    .notifications-menu {
-        width: 280px;
-        right: 10px;
-    }
-    body {
-        padding-top: 64px;
-    }
-
-    .logo {
-        height: 40px;
-        padding: 0 18px;
-        font-size: 17px;
-        border-radius: 10px;
-    }
-
-    .Github {
-        width: 30px;
-    }
-
-    /* Ocultar navegación desktop en móvil */
+@media (max-width: 1260px) {
+    /* Drawer navigation for small/medium screens */
     .navbar-nav {
         position: fixed;
-        top: 64px;
-        left: -100%;
-        width: 280px;
-        height: calc(100vh - 64px);
+        top: 70px;
+        left: 0;
+        transform: translateX(-100%);
+        width: 85vw;
+        max-width: 320px;
+        height: calc(100vh - 70px);
         background-color: var(--background);
         flex-direction: column;
         padding: 20px 0;
         box-shadow: var(--shadow-heavy);
-        transition: left 0.3s ease;
+        transition: transform 0.3s ease;
         gap: 0;
         overflow-y: auto;
         z-index: 1000;
+        will-change: transform;
     }
 
     .navbar-nav.active {
-        left: 0;
+        transform: translateX(0);
     }
 
     .nav-item {
@@ -413,6 +491,61 @@ body {
         background-color: rgba(26, 115, 232, 0.06);
     }
 
+    .menu-toggle {
+        display: flex;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .navbar-actions .auth-buttons {
+        display: none;
+    }
+
+    .user-menu {
+        top: 58px;
+        right: 10px;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 16px;
+        height: 64px;
+        border-radius: 0;
+        margin: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+    .notifications-menu {
+        width: 280px;
+        right: 10px;
+    }
+    body {
+        padding-top: 64px;
+    }
+
+    .navbar-nav {
+        top: 64px;
+        height: calc(100vh - 64px);
+    }
+
+    .logo {
+        height: 40px;
+        padding: 0 18px;
+        font-size: 17px;
+        border-radius: 10px;
+    }
+
+    .Github {
+        width: 30px;
+    }
+
     /* Botones de auth en el menú móvil */
     .navbar-nav .auth-buttons {
         display: flex;
@@ -421,6 +554,9 @@ body {
         gap: 12px;
         margin-top: 10px;
         border-top: 1px solid var(--border-color);
+    }
+    .navbar-nav .mobile-auth {
+        width: 100%;
     }
 
     .navbar-nav .auth-btn {
@@ -499,12 +635,22 @@ body {
 
     .navbar-brand {
         gap: 10px;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .logo {
         padding: 0 16px;
         font-size: 16px;
         height: 38px;
+        max-width: 60vw;
+        overflow: hidden;
+    }
+
+    .logo img {
+        height: auto;
+        max-height: 100%;
+        max-width: 100%;
     }
 
     .Github {
@@ -530,6 +676,10 @@ body {
 
 /* Extra Small Mobile */
 @media (max-width: 360px) {
+    .github-link {
+        display: none;
+    }
+
     .navbar {
         padding: 0 10px;
     }
