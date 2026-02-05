@@ -451,7 +451,27 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .welcome-container {
+        margin: 1.25rem auto;
+        padding: 0 1rem;
+    }
+
+    .hero-section {
+        padding: 2.25rem 1.75rem;
+    }
+}
+
 @media (max-width: 768px) {
+    .welcome-container {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+    }
+
+    .hero-section {
+        padding: 2rem 1.25rem;
+    }
+
     .welcome-title {
         font-size: 1.8rem;
     }
@@ -486,5 +506,28 @@
     
     .tech-contact-section {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section,
+    .testimonials-section,
+    .cta-section,
+    .faq-preview,
+    .tech-stack,
+    .contact-promo {
+        padding: 1.25rem;
+    }
+
+    .welcome-title {
+        font-size: 1.55rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
     }
 }
