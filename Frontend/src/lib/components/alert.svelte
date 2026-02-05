@@ -14,7 +14,8 @@ if (browser) {
 
 <div
   class="AlertModule"
-  style="border-left-color: {alert.color}; right: {alert.visible ? '60px' : '-500px'}"
+  class:visible={alert.visible}
+  style="border-left-color: {alert.color};"
 >
   <h2>{alert.title}</h2>
   <p>{alert.description}</p>

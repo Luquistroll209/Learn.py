@@ -3,15 +3,21 @@
 
     color: white;
     border-left: 8px solid rgba(255, 8, 0, 0.645);
-    position: absolute;
+    position: fixed;
     z-index: 9999;
     backdrop-filter: blur(4px);
     border-radius: 0px 10px 10px 0px;
     padding: 10px;
-    /*right: 60px;*/
-    right: -400px;
-    top: 40px;
-    transition: 1s;
+    right: 16px;
+    top: max(16px, env(safe-area-inset-top));
+    max-width: calc(100vw - 32px);
+    width: 360px;
+    transform: translateX(calc(100% + 24px));
+    transition: transform 0.45s ease;
+}
+
+.AlertModule.visible{
+    transform: translateX(0);
 }
 
 .AlertModule h2{
