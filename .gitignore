@@ -1,0 +1,12 @@
+# Ignorar entorno virtual
+env/
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Node modules (si usas Node.js)
+node_modules/
+
+# Archivos de log
+*.log
