@@ -1,28 +1,22 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import type { PageLoad } from './$types';
     import { showAlert } from '$lib/store/alertStore.js';
     import Alert from '$lib/components/alert.svelte';
     import "$lib/style/createClass.css";
 
     let activeTab = 'tablón';
-    let showTaskModal = false;
-    let showAnnouncementModal = false;
     import "$lib/style/inClass.css";
     import imgDefault from '$lib/images/classDefault.webp';
 
     import { browser } from '$app/environment';
-    import { redirect } from '@sveltejs/kit';
     import { urlip, urlMedia } from '$lib/config';
 
-    let clase: any[] = [];
-
-    import { invalidate } from '$app/navigation';
+    let clase: any = {};
     let students: any[] = [];
     let teachers: any[] = [];
-    //variables y objetos para obtener la ID
+
     import { page } from '$app/stores';
-    let id;
+    let id = '';
     $: id = $page.params.id;
 
     let showInviteModal = false;
@@ -30,7 +24,11 @@
     let showCreateTask = false;
 
     let areYouTeacher = false;
-    let username = null;
+    let isSubmittingTask = false;
+    let tasksLoading = false;
+    let tasks: any[] = [];
+    let submissionFilesByTask: Record<number, File[]> = {};
+    let submittingByTask: Record<number, boolean> = {};
 
     let inviteEmail = '';
 
@@ -42,39 +40,100 @@
     let newsImages: File[] = [];
     let isSubmitting = false;
 
-    // tareas (frontend-only)
+    // tareas (backend)
     let taskTitle = '';
     let taskDueDate = '';
-    let taskStatus = 'pendiente';
-    let taskMaxGrade = '10';
     let taskDescription = '';
     let taskUrls = '';
     let taskImages: File[] = [];
+    let taskAllowAnyFileType = true;
+    let taskAllowedExtensions = '';
+    let taskMaxFiles = 1;
+    let taskMaxFileSizeMb = 100;
 
-    onMount(() => {
+    // calificaciones
+    let grades: any[] = [];
+    let averageGrade = '-';
+    const materials: any[] = [];
+
+    onMount(async () => {
         if (browser) {
             const token = localStorage.getItem('token');
             if (!token) {
-                //throw redirect(302, '/auth/login');
                 window.location.href = '/auth/login';
             } else {
-                loadClass().then(loadAnnouncements);
+                await loadClass();
+                await Promise.all([loadAnnouncements(), loadTasks()]);
             }
         }
     });
 
+    function parseUrls(raw: string): string[] {
+        return raw
+            .split(/\n|,/)
+            .map((u) => u.trim())
+            .filter(Boolean);
+    }
+
+    function formatDate(dateValue: string | null | undefined): string {
+        if (!dateValue) return 'Sin fecha';
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return dateValue;
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function toBackendDate(dateValue: string): string {
+        const date = new Date(`${dateValue}T23:59:59`);
+        if (Number.isNaN(date.getTime())) return dateValue;
+        return date.toISOString();
+    }
+
+    function buildTaskStatus(task: any, teacherView: boolean): string {
+        if (!teacherView && task.is_delivered) return 'entregada';
+        if (task.due_at) {
+            const dueDate = new Date(task.due_at);
+            if (!Number.isNaN(dueDate.getTime()) && dueDate < new Date()) return 'atrasada';
+        }
+        return 'pendiente';
+    }
+
+    function updateGradesFromTasks() {
+        const withGrades = tasks.filter((task) => !areYouTeacher && task.grade !== null && task.grade !== undefined);
+        grades = withGrades.map((task) => {
+            const gradeNumber = Number(task.grade);
+            const percentage = Number.isNaN(gradeNumber) ? '-' : `${Math.round((gradeNumber / 10) * 100)}%`;
+            return {
+                task: task.title,
+                grade: task.grade,
+                maxGrade: '10',
+                percentage,
+                date: task.delivered_at ? formatDate(task.delivered_at) : '-'
+            };
+        });
+
+        if (grades.length === 0) {
+            averageGrade = '-';
+            return;
+        }
+
+        const total = grades.reduce((acc, item) => acc + Number(item.grade || 0), 0);
+        averageGrade = (total / grades.length).toFixed(2);
+    }
+
+    function getClassImageSource(): string {
+        if (!clase?.imagen_url) return imgDefault;
+        if (String(clase.imagen_url).startsWith('http')) return clase.imagen_url;
+        return `${urlMedia}${clase.imagen_url}`;
+    }
+
     async function loadClass() {
         const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('userData');
-        /*
-        if (userData) {
-            const user = JSON.parse(userData);
-            username = `${user.name}`;
-        }  
-        console.log(username);
-        */
         
-        const respose = await fetch(`${urlip}class/obtainClassByID/${id}`, {
+        const response = await fetch(`${urlip}class/obtainClassByID/${id}`, {
                 method: 'get',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,33 +142,33 @@
                 },
             });
 
-            const data = await respose.json();
+            const data = await response.json();
 
-            if (respose.ok){
-                clase = data || [];    
+            if (response.ok){
+                clase = data || {};
                 students = [];
                 teachers = [];
-                console.log(clase);
-                for (let i = 0; i < clase.students_info.length; i++) {
-                    if (clase.students_info[i].role === "student") {
+                const members = Array.isArray(clase.students_info) ? clase.students_info : [];
+                for (let i = 0; i < members.length; i++) {
+                    if (members[i].role === "student") {
                         const studentWithAvatar = {
-                            ...clase.students_info[i],
-                            avatar: `${clase.students_info[i].username.charAt(0)}`.toUpperCase()
+                            ...members[i],
+                            avatar: `${members[i].username.charAt(0)}`.toUpperCase()
                         };
                         
                         students.push(studentWithAvatar);
-                    } else if (clase.students_info[i].role === "teacher" || clase.students_info[i].role === "assistant" ){
+                    } else if (members[i].role === "teacher" || members[i].role === "assistant" ){
                         const TeachersWithAvatar = {
-                            ...clase.students_info[i],
-                            avatar: `${clase.students_info[i].username.charAt(0)}`.toUpperCase()
+                            ...members[i],
+                            avatar: `${members[i].username.charAt(0)}`.toUpperCase()
                         };
                         
                         teachers.push(TeachersWithAvatar);
                     }
-                }//teachers
-            }/*else{
-                showAlert("Error", "Error", "red");
-            }*/
+                }
+            } else {
+                showAlert("Error", data?.Error || "No se pudo cargar la clase", "red");
+            }
     }
 
     async function loadAnnouncements() {
@@ -144,10 +203,7 @@
         }
 
         const token = localStorage.getItem('token');
-        const urlsArray = newsUrls
-            .split(/\n|,/)
-            .map((u) => u.trim())
-            .filter(Boolean);
+        const urlsArray = parseUrls(newsUrls);
 
         const formData = new FormData();
         formData.append('clase_id', id);
@@ -183,34 +239,46 @@
             showAlert("Error", data?.Error || "No se pudo crear el anuncio", "red");
         }
     }
-    /*
-    let tasks: any[] = [
-        { id: 1, title: 'Práctica 1: Introducción a Svelte', dueDate: '5 Ene', status: 'entregada', grade: '9.5', maxGrade: '10' },
-        { id: 2, title: 'Proyecto Final - Primera Entrega', dueDate: '15 Ene', status: 'pendiente', grade: '-', maxGrade: '10' },
-        { id: 3, title: 'Ejercicios Tema 2', dueDate: '20 Ene', status: 'pendiente', grade: '-', maxGrade: '10' },
-        { id: 4, title: 'Lectura: Componentes Reactivos', dueDate: '25 Ene', status: 'atrasada', grade: '-', maxGrade: '5' }
-    ];
-    */
-    const materials = [
-        { id: 1, title: 'Tema 1: Introducción', type: 'pdf', size: '2.4 MB', date: '1 Dic' },
-        { id: 2, title: 'Tema 2: Componentes', type: 'pdf', size: '3.1 MB', date: '8 Dic' },
-        { id: 3, title: 'Ejercicios prácticos', type: 'zip', size: '1.2 MB', date: '15 Dic' },
-        { id: 4, title: 'Video: Tutorial Svelte', type: 'video', size: '45 MB', date: '20 Dic' }
-    ];
-    
-    const grades = [
-        { task: 'Práctica 1: Introducción a Svelte', grade: '9.5', maxGrade: '10', percentage: '95%', date: '10 Dic' },
-        { task: 'Examen Tema 1', grade: '8.0', maxGrade: '10', percentage: '80%', date: '5 Dic' },
-        { task: 'Participación en clase', grade: '10', maxGrade: '10', percentage: '100%', date: '30 Nov' }
-    ];
-    /*
-    const students = [
-        { id: 1, name: 'Ana Martínez', email: 'ana@example.com', avatar: 'AM' },
-        { id: 2, name: 'Carlos López', email: 'carlos@example.com', avatar: 'CL' },
-        { id: 3, name: 'María García', email: 'maria@example.com', avatar: 'MG' },
-        { id: 4, name: 'Juan Pérez', email: 'juan@example.com', avatar: 'JP' }
-    ];
-    */
+
+    async function loadTasks() {
+        const token = localStorage.getItem('token');
+        tasksLoading = true;
+        try {
+            const response = await fetch(`${urlip}class/obtainPendingTasks/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'authorization': `${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                showAlert("Error", data?.Error || "No se pudieron cargar las tareas", "red");
+                tasks = [];
+                return;
+            }
+
+            areYouTeacher = Boolean(data?.is_teacher);
+            tasks = (data?.tasks || []).map((task: any) => {
+                const status = buildTaskStatus(task, areYouTeacher);
+                return {
+                    ...task,
+                    dueDate: formatDate(task.due_at),
+                    status,
+                    grade: task.grade ?? '-'
+                };
+            });
+            updateGradesFromTasks();
+        } catch (error) {
+            tasks = [];
+            showAlert("Error", "Error de conexión al cargar tareas", "red");
+        } finally {
+            tasksLoading = false;
+        }
+    }
+
     async function invitarAlumno() {
         if (!inviteEmail) return;
         
@@ -240,44 +308,67 @@
                 showAlert("Error", errorData.Error, "red");
             }
         } catch (error) {
-            //console.error('Error:', error);
             alert('Error al enviar la invitación');
         }
     }
 
-    function createTask() {
-        if (!taskTitle.trim()) {
-            showAlert("Error", "El título es obligatorio", "orange");
+    async function createTask() {
+        if (!taskTitle.trim() || !taskDescription.trim()) {
+            showAlert("Error", "Título y descripción son obligatorios", "orange");
             return;
         }
 
-        const urlsArray = taskUrls
-            .split(/\n|,/)
-            .map((u) => u.trim())
+        const token = localStorage.getItem('token');
+        const urlsArray = parseUrls(taskUrls);
+        const extensionsArray = taskAllowedExtensions
+            .split(/[,\n]/)
+            .map((item) => item.trim().replace('.', '').toLowerCase())
             .filter(Boolean);
 
-        const newTask = {
-            id: Date.now(),
-            title: taskTitle.trim(),
-            dueDate: taskDueDate || 'Sin fecha',
-            status: taskStatus,
-            grade: '-',
-            maxGrade: taskMaxGrade || '10',
-            description: taskDescription.trim(),
-            urls: urlsArray,
-            photos: taskImages
-        };
+        const formData = new FormData();
+        formData.append('clase_id', id);
+        formData.append('title', taskTitle.trim());
+        formData.append('description', taskDescription.trim());
+        formData.append('allow_any_file_type', String(taskAllowAnyFileType));
+        formData.append('allowed_extensions', JSON.stringify(extensionsArray));
+        formData.append('max_files', String(taskMaxFiles));
+        formData.append('max_file_size_mb', String(taskMaxFileSizeMb));
+        formData.append('urls', JSON.stringify(urlsArray));
+        if (taskDueDate) {
+            formData.append('due_at', toBackendDate(taskDueDate));
+        }
+        for (const file of taskImages) {
+            formData.append('photos', file);
+        }
 
-        tasks = [newTask, ...tasks];
+        isSubmittingTask = true;
+        const response = await fetch(`${urlip}class/createTask/`, {
+            method: 'POST',
+            headers: {
+                'authorization': `${token}`
+            },
+            body: formData
+        });
+        const data = await response.json();
+        isSubmittingTask = false;
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo crear la tarea", "red");
+            return;
+        }
+
         taskTitle = '';
         taskDueDate = '';
-        taskStatus = 'pendiente';
-        taskMaxGrade = '10';
         taskDescription = '';
         taskUrls = '';
         taskImages = [];
+        taskAllowAnyFileType = true;
+        taskAllowedExtensions = '';
+        taskMaxFiles = 1;
+        taskMaxFileSizeMb = 100;
         showCreateTask = false;
-        showAlert("Listo", "Tarea creada (solo frontend)", "green");
+        showAlert("Listo", "Tarea creada correctamente", "green");
+        await loadTasks();
     }
 
     function handleTaskFiles(event: Event) {
@@ -285,6 +376,50 @@
         const files = target.files ? Array.from(target.files) : [];
         taskImages = files;
     }
+
+    function handleTaskSubmissionFiles(event: Event, taskId: number) {
+        const target = event.currentTarget as HTMLInputElement;
+        const files = target.files ? Array.from(target.files) : [];
+        submissionFilesByTask = {
+            ...submissionFilesByTask,
+            [taskId]: files
+        };
+    }
+
+    async function submitTask(taskId: number) {
+        const files = submissionFilesByTask[taskId] || [];
+        if (!files.length) {
+            showAlert("Error", "Selecciona al menos un archivo para entregar", "orange");
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('files', file);
+        }
+
+        submittingByTask = { ...submittingByTask, [taskId]: true };
+        const response = await fetch(`${urlip}class/submitTask/${taskId}/`, {
+            method: 'POST',
+            headers: {
+                'authorization': `${token}`
+            },
+            body: formData
+        });
+        const data = await response.json();
+        submittingByTask = { ...submittingByTask, [taskId]: false };
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo entregar la tarea", "red");
+            return;
+        }
+
+        showAlert("Listo", "Tarea entregada correctamente", "green");
+        submissionFilesByTask = { ...submissionFilesByTask, [taskId]: [] };
+        await loadTasks();
+    }
+
 </script>
 
 <Alert />
@@ -398,7 +533,7 @@
             <button class="modal-close" on:click={() => showCreateTask = false} aria-label="Cerrar">×</button>
             <div class="form-header">
                 <h2>Nueva tarea</h2>
-                <p>Agrega una tarea (solo frontend)</p>
+                <p>Crea una tarea real en el backend</p>
             </div>
             
             <form on:submit|preventDefault={createTask}>
@@ -430,26 +565,6 @@
                         placeholder="Describe la tarea..."
                         bind:value={taskDescription}
                     ></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="taskStatus">Estado</label>
-                    <select id="taskStatus" bind:value={taskStatus}>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="entregada">Entregada</option>
-                        <option value="atrasada">Atrasada</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="taskMax">Puntaje máximo</label>
-                    <input
-                        id="taskMax"
-                        type="number"
-                        min="1"
-                        step="1"
-                        bind:value={taskMaxGrade}
-                    >
                 </div>
 
                 <div class="form-group">
@@ -485,10 +600,54 @@
                         </div>
                     {/if}
                 </div>
+
+                <div class="form-group">
+                    <label for="taskAllowAnyType">Tipos de archivo</label>
+                    <select id="taskAllowAnyType" bind:value={taskAllowAnyFileType}>
+                        <option value={true}>Permitir cualquier tipo</option>
+                        <option value={false}>Restringir por extensión</option>
+                    </select>
+                </div>
+
+                {#if !taskAllowAnyFileType}
+                    <div class="form-group">
+                        <label for="taskAllowedExtensions">Extensiones permitidas</label>
+                        <input
+                            id="taskAllowedExtensions"
+                            placeholder="pdf, docx, zip, py"
+                            type="text"
+                            bind:value={taskAllowedExtensions}
+                        >
+                    </div>
+                {/if}
+
+                <div class="form-group">
+                    <label for="taskMaxFiles">Máximo archivos por entrega</label>
+                    <input
+                        id="taskMaxFiles"
+                        type="number"
+                        min="1"
+                        max="50"
+                        bind:value={taskMaxFiles}
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="taskMaxSize">Tamaño máximo por archivo (MB)</label>
+                    <input
+                        id="taskMaxSize"
+                        type="number"
+                        min="1"
+                        max="1024"
+                        bind:value={taskMaxFileSizeMb}
+                    >
+                </div>
                 
                 <div class="form-actions">
                     <button type="button" class="cancel-btn" on:click={() => showCreateTask = false}>Cancelar</button>
-                    <button class="send-btn" type="submit">Crear tarea</button>
+                    <button class="send-btn" type="submit" disabled={isSubmittingTask}>
+                        {isSubmittingTask ? 'Creando...' : 'Crear tarea'}
+                    </button>
                 </div>
             </form>
         </div>
@@ -497,11 +656,7 @@
 
 <div class="class-container">
     <div class="class-header">
-        {#if clase.imagen_url === null}
-            <div class="portada"><img src={imgDefault} alt="" class="portada" ></div>
-        {:else}
-            <div class="portada"><img src={urlMedia}{clase.imagen_url} alt="" class="portada" ></div>
-        {/if}
+        <div class="portada-wrap"><img src={getClassImageSource()} alt="" class="portada-image" ></div>
         <div class="class-header-content">
             <h1>{clase.name}</h1>
             <p>{clase.description}</p>
@@ -569,32 +724,77 @@
             {#if activeTab === 'tareas'}
                 <div class="card-title">
                     Todas las tareas
-                    <button class="action-button" on:click={() => showCreateTask = true}>+ Crear tarea</button>
+                    {#if areYouTeacher}
+                        <button class="action-button" on:click={() => showCreateTask = true}>+ Crear tarea</button>
+                    {/if}
                 </div>
-                
-                {#each tasks as task}
-                    <div class="task-item">
-                        <div class="task-icon">📄</div>
-                        <div class="task-info">
-                            <div class="task-title">{task.title}</div>
-                            <div class="task-due">Fecha límite: {task.dueDate}</div>
-                        </div>
-                        <span class="task-status {task.status}">
-                            {task.status === 'entregada' ? 'Entregada' : task.status === 'pendiente' ? 'Pendiente' : 'Atrasada'}
-                        </span>
-                        {#if task.grade !== '-'}
-                            <div style="margin-left: 16px; font-weight: 600; color: var(--primary-color);">
-                                {task.grade}/{task.maxGrade}
-                            </div>
-                        {/if}
+
+                {#if tasksLoading}
+                    <div class="announcement-item">
+                        <div class="announcement-title">Cargando tareas...</div>
                     </div>
-                {/each}
+                {:else if tasks.length === 0}
+                    <div class="announcement-item">
+                        <div class="announcement-title">No hay tareas pendientes</div>
+                    </div>
+                {:else}
+                    {#each tasks as task}
+                        <div class="task-item task-item-expanded">
+                            <a class="task-row task-row-link" href={`/clases/clase-${id}/tarea-${task.id}`}>
+                                <div class="task-icon"><i class="fa-solid fa-file-lines"></i></div>
+                                <div class="task-info">
+                                    <div class="task-title">{task.title}</div>
+                                    <div class="task-due">Fecha límite: {task.dueDate}</div>
+                                </div>
+                                <span class="task-status {task.status}">
+                                    {task.status === 'entregada' ? 'Entregada' : task.status === 'pendiente' ? 'Pendiente' : 'Atrasada'}
+                                </span>
+                            </a>
+
+                            <div class="task-meta-row">
+                                {#if areYouTeacher}
+                                    <span class="task-due">Entregadas: {task.delivered_count ?? 0}</span>
+                                    <span class="task-due">Pendientes: {task.pending_count ?? 0}</span>
+                                {:else}
+                                    <span class="task-due">Nota: {task.grade ?? '-'}</span>
+                                {/if}
+                                <a class="secondary-button" href={`/clases/clase-${id}/tarea-${task.id}`}>Ver detalle</a>
+                            </div>
+
+                            {#if !areYouTeacher && !task.is_delivered}
+                                <div class="task-submit-row">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        on:change={(event) => handleTaskSubmissionFiles(event, task.id)}
+                                    >
+                                    <button
+                                        class="action-button"
+                                        on:click={() => submitTask(task.id)}
+                                        disabled={submittingByTask[task.id]}
+                                    >
+                                        {submittingByTask[task.id] ? 'Entregando...' : 'Entregar'}
+                                    </button>
+                                </div>
+                                {#if submissionFilesByTask[task.id]?.length}
+                                    <div class="files files-compact">
+                                        {#each submissionFilesByTask[task.id] as file}
+                                            <div class="file">{file.name}</div>
+                                        {/each}
+                                    </div>
+                                {/if}
+                            {/if}
+                        </div>
+                    {/each}
+                {/if}
             {/if}
             
             {#if activeTab === 'personas'}
                 <div class="card-title">    
                     Profesores
-                    <button on:click={() => showInviteModal = true} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
+                    {#if areYouTeacher}
+                        <button on:click={() => showInviteModal = true} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
+                    {/if}
                 </div>
                 
                 {#each teachers as teacher}
@@ -624,22 +824,32 @@
             {#if activeTab === 'calificaciones'}
                 <div class="average-card">
                     <div class="average-label">Tu calificación promedio</div>
-                    <div class="average-number">9.2</div>
+                    <div class="average-number">{averageGrade}</div>
                 </div>
                 
                 <div class="card-title">Historial de calificaciones</div>
-                {#each grades as grade}
-                    <div class="grade-item">
-                        <div class="grade-info">
-                            <div class="grade-task">{grade.task}</div>
-                            <div class="grade-date">Calificado el {grade.date}</div>
-                        </div>
-                        <div class="grade-score">
-                            <div class="grade-number">{grade.grade}</div>
-                            <div class="grade-percentage">{grade.percentage}</div>
-                        </div>
+                {#if areYouTeacher}
+                    <div class="announcement-item">
+                        <div class="announcement-title">Esta vista de calificaciones es para alumnos.</div>
                     </div>
-                {/each}
+                {:else if grades.length === 0}
+                    <div class="announcement-item">
+                        <div class="announcement-title">Aún no tienes tareas calificadas.</div>
+                    </div>
+                {:else}
+                    {#each grades as grade}
+                        <div class="grade-item">
+                            <div class="grade-info">
+                                <div class="grade-task">{grade.task}</div>
+                                <div class="grade-date">Calificado el {grade.date}</div>
+                            </div>
+                            <div class="grade-score">
+                                <div class="grade-number">{grade.grade}</div>
+                                <div class="grade-percentage">{grade.percentage}</div>
+                            </div>
+                        </div>
+                    {/each}
+                {/if}
             {/if}
             
             {#if activeTab === 'materiales'}
@@ -651,7 +861,13 @@
                 {#each materials as material}
                     <div class="material-item">
                         <div class="material-icon">
-                            {material.type === 'pdf' ? '📄' : material.type === 'video' ? '🎥' : '📦'}
+                            {#if material.type === 'pdf'}
+                                <i class="fa-solid fa-file-pdf"></i>
+                            {:else if material.type === 'video'}
+                                <i class="fa-solid fa-video"></i>
+                            {:else}
+                                <i class="fa-solid fa-box-archive"></i>
+                            {/if}
                         </div>
                         <div class="material-info">
                             <div class="material-title">{material.title}</div>
@@ -666,14 +882,18 @@
         <div class="sidebar">
             <div class="card">
                 <div class="card-title">Próximas entregas</div>
-                <div class="upcoming-item">
-                    <div class="upcoming-title">Proyecto Final - Primera Entrega</div>
-                    <div class="upcoming-date">15 de Enero</div>
-                </div>
-                <div class="upcoming-item">
-                    <div class="upcoming-title">Ejercicios Tema 2</div>
-                    <div class="upcoming-date">20 de Enero</div>
-                </div>
+                {#if tasks.length === 0}
+                    <div class="upcoming-item">
+                        <div class="upcoming-title">Sin tareas pendientes</div>
+                    </div>
+                {:else}
+                    {#each tasks.slice(0, 3) as task}
+                        <div class="upcoming-item">
+                            <div class="upcoming-title">{task.title}</div>
+                            <div class="upcoming-date">{task.dueDate}</div>
+                        </div>
+                    {/each}
+                {/if}
             </div>
             <!--
             <div class="card">
