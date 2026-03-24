@@ -454,7 +454,8 @@ class ObtainAnnouncementsView(APIView):
 class CreateTaskView(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
-    def post(self, request):
+    def post(self, request, clase_id=None):
+        #return Response({'Error', clase_id}, status=status.HTTP_200_OK)
         user = get_authenticated_user(request)
         if not request.META.get('HTTP_AUTHORIZATION', ''):
             return Response({'Error': 'Token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
@@ -462,9 +463,12 @@ class CreateTaskView(APIView):
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
 
         raw_data = request.data.copy()
+        """
         clase_id = raw_data.get('clase_id')
+        
         if not clase_id:
             return Response({'Error': 'clase_id es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+        """
         if not raw_data.get('title'):
             return Response({'Error': 'title es requerido'}, status=status.HTTP_400_BAD_REQUEST)
         if not raw_data.get('description'):
@@ -530,7 +534,10 @@ class CreateTaskView(APIView):
         data['photos'] = existing_photos + photos_urls
         data['urls'] = urls_list
 
-        serializer = TaskSerializer(data=data, context={'user': user, 'request': request})
+        serializer = TaskSerializer(
+               data=data,
+               context={'user': user, 'request': request, 'clase': clase}
+        )           
         if not serializer.is_valid():
             return Response(
                 {'Error': 'Datos inválidos', 'details': serializer.errors},
@@ -542,7 +549,7 @@ class CreateTaskView(APIView):
         response_data.update(build_teacher_task_participants(task, request=request))
 
         return Response(
-            {'message': 'Tarea creada exitosamente', 'task': response_data},
+            {'message': 'Tarea creada exitosamente', 'clase':clase_id, 'task': response_data},
             status=status.HTTP_201_CREATED
         )
 

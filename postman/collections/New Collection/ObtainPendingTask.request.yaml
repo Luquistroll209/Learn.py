@@ -1,0 +1,8 @@
+$kind: http-request
+name: ObtainPendingTask
+url: localhost:8000/api/class/obtainPendingTasks/0f4ayRLKYt/
+method: GET
+headers:
+  - key: Authorization
+    value: 72716bfbc95b7c6fa585afffe3661b361133d97b
+order: 1952497337589989

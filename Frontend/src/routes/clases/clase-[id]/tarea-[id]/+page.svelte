@@ -9,4 +9,9 @@
     onMount(() => {
         console.log('ID:', id);
     });
+    
 </script>
+
+<div>
+    
+</div>

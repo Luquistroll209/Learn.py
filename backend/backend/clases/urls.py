@@ -30,7 +30,7 @@ urlpatterns = [
     path('obtainAnnouncements/<str:clase_id>/', ObtainAnnouncementsView.as_view(), name='obtain-announcements'),
 
     #Tareas
-    path('createTask/', CreateTaskView.as_view(), name='create-task'),
+    path('createTask/<str:clase_id>/', CreateTaskView.as_view(), name='create-task'),
     path('submitTask/<int:task_id>/', SubmitTaskView.as_view(), name='submit-task'),
     path('obtainPendingTasks/<str:clase_id>/', ObtainPendingTasksView.as_view(), name='obtain-pending-tasks'),
     path('obtainTaskDetail/<int:task_id>/', ObtainTaskDetailView.as_view(), name='obtain-task-detail'),

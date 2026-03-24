@@ -326,7 +326,7 @@
             .filter(Boolean);
 
         const formData = new FormData();
-        formData.append('clase_id', id);
+        //formData.append('clase_id', id);
         formData.append('title', taskTitle.trim());
         formData.append('description', taskDescription.trim());
         formData.append('allow_any_file_type', String(taskAllowAnyFileType));
@@ -342,7 +342,7 @@
         }
 
         isSubmittingTask = true;
-        const response = await fetch(`${urlip}class/createTask/`, {
+        const response = await fetch(`${urlip}class/createTask/${id}/`, {
             method: 'POST',
             headers: {
                 'authorization': `${token}`

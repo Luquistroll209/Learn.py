@@ -1,0 +1,12 @@
+$kind: http-request
+name: Login
+url: 127.0.0.1:8000/api/users/login/
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "email": "luquistroll@gmail.com",
+        "password": "Robot2008"
+    }
+order: 1774272347043

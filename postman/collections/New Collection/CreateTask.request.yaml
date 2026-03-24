@@ -1,0 +1,26 @@
+$kind: http-request
+name: CreateTask
+url: localhost:8000/api/class/createTask/
+method: POST
+headers:
+  - key: Authorization
+    value: 72716bfbc95b7c6fa585afffe3661b361133d97b
+body:
+  type: formdata
+  content:
+    - type: text
+      key: clase_id
+      value: 0f4ayRLKYt
+      description: ""
+      disabled: false
+    - type: text
+      key: title
+      value: titulo1
+      description: ""
+      disabled: false
+    - type: text
+      key: description
+      value: descripcion1
+      description: ""
+      disabled: false
+order: 4102638755846688

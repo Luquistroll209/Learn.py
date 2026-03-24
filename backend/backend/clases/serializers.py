@@ -175,7 +175,7 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     creator_info = serializers.SerializerMethodField()
     is_teacher = serializers.SerializerMethodField()
-    clase_id = serializers.CharField(write_only=True)
+    #clase_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = Task
@@ -211,8 +211,9 @@ class TaskSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        clase_id = validated_data.pop('clase_id')
-        clase = Clase.objects.get(id=clase_id)
+        #clase_id = validated_data.pop('clase_id')
+        clase = self.context['clase']
+        #clase = Clase.objects.get(id=clase_id)
         user = self.context['user']
         return Task.objects.create(
             clase=clase,
