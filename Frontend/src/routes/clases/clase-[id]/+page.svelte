@@ -133,7 +133,7 @@
     async function loadClass() {
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`${urlip}class/obtainClassByID/${id}`, {
+            const response = await fetch(`${urlip}class/obtainClassByID/${id}`, {
                 method: 'get',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,0 +1,14 @@
+$kind: http-request
+name: gradeTaskSubmission
+url: localhost:8000/api/class/gradeTaskSubmission/17/
+method: POST
+headers:
+  Authorization: 72716bfbc95b7c6fa585afffe3661b361133d97b
+body:
+  type: json
+  content: |-
+    {
+        "student_id": "7826668831",
+        "grade": "7"
+    }
+order: 3125333057206509

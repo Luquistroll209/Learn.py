@@ -10,7 +10,6 @@ from django.core.files.storage import default_storage
 
 HARD_MAX_UPLOAD_BYTES = 1024 * 1024 * 1024  # 1GB
 
-
 def parse_list(value):
     if value is None:
         return []
