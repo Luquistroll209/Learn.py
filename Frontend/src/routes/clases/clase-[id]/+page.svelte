@@ -17,7 +17,7 @@
 
     import { page } from '$app/stores';
     let id = '';
-    $: id = $page.params.id;
+    $: id = $page.params.id ?? '';
 
     let showInviteModal = false;
     let showCreateNews = false;
@@ -34,6 +34,7 @@
 
     // anuncios
     let announcements: any[] = [];
+    let announcementSort = 'activity';
     let newsTitle = '';
     let newsDescription = '';
     let newsUrls = '';
@@ -56,6 +57,24 @@
     let averageGrade = '-';
     const materials: any[] = [];
 
+    // edición y gestión
+    let showEditNews = false;
+    let editingAnnouncementId: number | null = null;
+    let editNewsTitle = '';
+    let editNewsDescription = '';
+    let editNewsUrls = '';
+
+    let showEditTask = false;
+    let editingTaskId: number | null = null;
+    let editTaskTitle = '';
+    let editTaskDueDate = '';
+    let editTaskDescription = '';
+    let editTaskUrls = '';
+    let editTaskAllowAnyFileType = true;
+    let editTaskAllowedExtensions = '';
+    let editTaskMaxFiles = 1;
+    let editTaskMaxFileSizeMb = 100;
+
     onMount(async () => {
         if (browser) {
             const token = localStorage.getItem('token');
@@ -63,7 +82,7 @@
                 window.location.href = '/auth/login';
             } else {
                 await loadClass();
-                await Promise.all([loadAnnouncements(), loadTasks()]);
+                await Promise.all([loadAnnouncements(announcementSort), loadTasks()]);
             }
         }
     });
@@ -130,6 +149,23 @@
         return `${urlMedia}${clase.imagen_url}`;
     }
 
+    function hydrateClassMembers() {
+        students = [];
+        teachers = [];
+        const members = Array.isArray(clase.students_info) ? clase.students_info : [];
+        for (let i = 0; i < members.length; i++) {
+            const userData = {
+                ...members[i],
+                avatar: `${members[i].username.charAt(0)}`.toUpperCase()
+            };
+            if (members[i].role === 'student') {
+                students.push(userData);
+            } else if (members[i].role === 'teacher' || members[i].role === 'assistant') {
+                teachers.push(userData);
+            }
+        }
+    }
+
     async function loadClass() {
         const token = localStorage.getItem('token');
         
@@ -146,34 +182,16 @@
 
             if (response.ok){
                 clase = data || {};
-                students = [];
-                teachers = [];
-                const members = Array.isArray(clase.students_info) ? clase.students_info : [];
-                for (let i = 0; i < members.length; i++) {
-                    if (members[i].role === "student") {
-                        const studentWithAvatar = {
-                            ...members[i],
-                            avatar: `${members[i].username.charAt(0)}`.toUpperCase()
-                        };
-                        
-                        students.push(studentWithAvatar);
-                    } else if (members[i].role === "teacher" || members[i].role === "assistant" ){
-                        const TeachersWithAvatar = {
-                            ...members[i],
-                            avatar: `${members[i].username.charAt(0)}`.toUpperCase()
-                        };
-                        
-                        teachers.push(TeachersWithAvatar);
-                    }
-                }
+                hydrateClassMembers();
             } else {
                 showAlert("Error", data?.Error || "No se pudo cargar la clase", "red");
             }
     }
 
-    async function loadAnnouncements() {
+    async function loadAnnouncements(sortMode = announcementSort) {
+        announcementSort = sortMode;
         const token = localStorage.getItem('token');
-        const response = await fetch(`${urlip}class/obtainAnnouncements/${id}/`, {
+        const response = await fetch(`${urlip}class/obtainAnnouncements/${id}/?sort=${encodeURIComponent(sortMode)}`, {
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
@@ -420,6 +438,194 @@
         await loadTasks();
     }
 
+    function openEditAnnouncement(announcement: any) {
+        editingAnnouncementId = Number(announcement.id);
+        editNewsTitle = announcement.title || '';
+        editNewsDescription = announcement.description || '';
+        editNewsUrls = Array.isArray(announcement.urls) ? announcement.urls.join('\n') : '';
+        showEditNews = true;
+    }
+
+    async function saveEditedAnnouncement() {
+        if (!editingAnnouncementId) return;
+        if (!editNewsTitle.trim() || !editNewsDescription.trim()) {
+            showAlert("Error", "Título y descripción son obligatorios", "orange");
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const payload = {
+            title: editNewsTitle.trim(),
+            description: editNewsDescription.trim(),
+            urls: parseUrls(editNewsUrls)
+        };
+
+        const response = await fetch(`${urlip}class/manageAnnouncement/${editingAnnouncementId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': `${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo editar el anuncio", "red");
+            return;
+        }
+
+        showEditNews = false;
+        editingAnnouncementId = null;
+        showAlert("Listo", "Anuncio actualizado", "green");
+        await loadAnnouncements(announcementSort);
+    }
+
+    async function deleteAnnouncement(announcementId: number) {
+        if (!confirm("¿Quieres eliminar este anuncio?")) return;
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${urlip}class/manageAnnouncement/${announcementId}/`, {
+            method: 'DELETE',
+            headers: {
+                'authorization': `${token}`
+            }
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo eliminar el anuncio", "red");
+            return;
+        }
+
+        showAlert("Listo", "Anuncio eliminado", "green");
+        await loadAnnouncements(announcementSort);
+    }
+
+    function openEditTask(task: any) {
+        editingTaskId = Number(task.id);
+        editTaskTitle = task.title || '';
+        editTaskDescription = task.description || '';
+        editTaskUrls = Array.isArray(task.urls) ? task.urls.join('\n') : '';
+        editTaskAllowAnyFileType = Boolean(task.allow_any_file_type);
+        editTaskAllowedExtensions = Array.isArray(task.allowed_extensions)
+            ? task.allowed_extensions.join(', ')
+            : '';
+        editTaskMaxFiles = Number(task.max_files || 1);
+        editTaskMaxFileSizeMb = Number(task.max_file_size_mb || 100);
+        editTaskDueDate = task.due_at ? new Date(task.due_at).toISOString().slice(0, 10) : '';
+        showEditTask = true;
+    }
+
+    async function saveEditedTask() {
+        if (!editingTaskId) return;
+        if (!editTaskTitle.trim() || !editTaskDescription.trim()) {
+            showAlert("Error", "Título y descripción son obligatorios", "orange");
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const payload: any = {
+            title: editTaskTitle.trim(),
+            description: editTaskDescription.trim(),
+            urls: parseUrls(editTaskUrls),
+            allow_any_file_type: editTaskAllowAnyFileType,
+            max_files: editTaskMaxFiles,
+            max_file_size_mb: editTaskMaxFileSizeMb,
+        };
+        if (editTaskDueDate) {
+            payload.due_at = toBackendDate(editTaskDueDate);
+        } else {
+            payload.due_at = null;
+        }
+        if (!editTaskAllowAnyFileType) {
+            payload.allowed_extensions = editTaskAllowedExtensions
+                .split(/[,\n]/)
+                .map((item) => item.trim().replace('.', '').toLowerCase())
+                .filter(Boolean);
+        } else {
+            payload.allowed_extensions = [];
+        }
+
+        const response = await fetch(`${urlip}class/manageTask/${editingTaskId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': `${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo editar la tarea", "red");
+            return;
+        }
+
+        showEditTask = false;
+        editingTaskId = null;
+        showAlert("Listo", "Tarea actualizada", "green");
+        await loadTasks();
+    }
+
+    async function deleteTask(taskId: number) {
+        if (!confirm("¿Quieres eliminar esta tarea? También se eliminarán sus entregas.")) return;
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${urlip}class/manageTask/${taskId}/`, {
+            method: 'DELETE',
+            headers: {
+                'authorization': `${token}`
+            }
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo eliminar la tarea", "red");
+            return;
+        }
+
+        showAlert("Listo", "Tarea eliminada", "green");
+        await loadTasks();
+    }
+
+    async function expulsarAlumno(studentId: number) {
+        if (!confirm("¿Seguro que quieres expulsar a este alumno de la clase?")) return;
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${urlip}class/removeMember/${id}/${studentId}/`, {
+            method: 'DELETE',
+            headers: {
+                'authorization': `${token}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo expulsar al alumno", "red");
+            return;
+        }
+        showAlert("Listo", "Alumno expulsado", "green");
+        await loadClass();
+        await loadTasks();
+    }
+
+    async function abandonarClase() {
+        if (!confirm("¿Quieres abandonar esta clase?")) return;
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${urlip}class/leaveClass/${id}/`, {
+            method: 'POST',
+            headers: {
+                'authorization': `${token}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo abandonar la clase", "red");
+            return;
+        }
+        showAlert("Listo", "Has abandonado la clase", "green");
+        window.location.href = '/clases';
+    }
+
 </script>
 
 <Alert />
@@ -654,6 +860,93 @@
     </div>
 {/if}
 
+{#if showEditNews}
+    <div class="modal-overlay" on:click={() => showEditNews = false}>
+        <div class="modal-card" on:click|stopPropagation>
+            <button class="modal-close" on:click={() => showEditNews = false} aria-label="Cerrar">×</button>
+            <div class="form-header">
+                <h2>Editar anuncio</h2>
+                <p>Actualiza el contenido del tablón</p>
+            </div>
+
+            <form on:submit|preventDefault={saveEditedAnnouncement}>
+                <div class="form-group">
+                    <label for="editNewsTitle">Título</label>
+                    <input id="editNewsTitle" type="text" bind:value={editNewsTitle} required>
+                </div>
+                <div class="form-group">
+                    <label for="editNewsDescription">Descripción</label>
+                    <textarea id="editNewsDescription" rows="4" bind:value={editNewsDescription} required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editNewsUrls">URLs (opcional)</label>
+                    <textarea id="editNewsUrls" rows="3" bind:value={editNewsUrls}></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" on:click={() => showEditNews = false}>Cancelar</button>
+                    <button class="send-btn" type="submit">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
+{#if showEditTask}
+    <div class="modal-overlay" on:click={() => showEditTask = false}>
+        <div class="modal-card" on:click|stopPropagation>
+            <button class="modal-close" on:click={() => showEditTask = false} aria-label="Cerrar">×</button>
+            <div class="form-header">
+                <h2>Editar tarea</h2>
+                <p>Modifica la configuración de la tarea</p>
+            </div>
+
+            <form on:submit|preventDefault={saveEditedTask}>
+                <div class="form-group">
+                    <label for="editTaskTitle">Título</label>
+                    <input id="editTaskTitle" type="text" bind:value={editTaskTitle} required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDueDate">Fecha límite</label>
+                    <input id="editTaskDueDate" type="date" bind:value={editTaskDueDate}>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Descripción</label>
+                    <textarea id="editTaskDescription" rows="4" bind:value={editTaskDescription} required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskUrls">URLs</label>
+                    <textarea id="editTaskUrls" rows="3" bind:value={editTaskUrls}></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskAllowAny">Tipos de archivo</label>
+                    <select id="editTaskAllowAny" bind:value={editTaskAllowAnyFileType}>
+                        <option value={true}>Permitir cualquier tipo</option>
+                        <option value={false}>Restringir por extensión</option>
+                    </select>
+                </div>
+                {#if !editTaskAllowAnyFileType}
+                    <div class="form-group">
+                        <label for="editTaskAllowedExtensions">Extensiones permitidas</label>
+                        <input id="editTaskAllowedExtensions" type="text" bind:value={editTaskAllowedExtensions} placeholder="pdf, docx, zip">
+                    </div>
+                {/if}
+                <div class="form-group">
+                    <label for="editTaskMaxFiles">Máximo archivos</label>
+                    <input id="editTaskMaxFiles" type="number" min="1" max="50" bind:value={editTaskMaxFiles}>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskMaxFileSizeMb">Tamaño máximo (MB)</label>
+                    <input id="editTaskMaxFileSizeMb" type="number" min="1" max="1024" bind:value={editTaskMaxFileSizeMb}>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" on:click={() => showEditTask = false}>Cancelar</button>
+                    <button class="send-btn" type="submit">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
 <div class="class-container">
     <div class="class-header">
         <div class="portada-wrap"><img src={getClassImageSource()} alt="" class="portada-image" ></div>
@@ -679,7 +972,14 @@
             {#if activeTab === 'tablón'}
                 <div class="card-title">
                     Anuncios recientes
-                    <button on:click={() => showCreateNews = true}  class="action-button">+ Nuevo anuncio</button>
+                    <div class="manage-row">
+                        <select class="forum-sort-select" bind:value={announcementSort} on:change={(event) => loadAnnouncements((event.currentTarget as HTMLSelectElement).value)}>
+                            <option value="activity">Más activos</option>
+                            <option value="new">Más nuevos</option>
+                            <option value="top">Más comentados</option>
+                        </select>
+                        <button on:click={() => showCreateNews = true}  class="action-button">+ Nuevo anuncio</button>
+                    </div>
                 </div>
                 
                 {#if announcements.length === 0}
@@ -697,10 +997,25 @@
                                     <div class="announcement-author">
                                         {announcement.creator_info?.first_name} {announcement.creator_info?.last_name}
                                     </div>
-                                    <div class="announcement-date">{announcement.created_at}</div>
+                                    <div class="announcement-date">
+                                        {announcement.created_at} • {announcement.comments_count || 0} comentario(s)
+                                    </div>
+                                </div>
+                                <div class="manage-row">
+                                    <a class="secondary-button" href={`/clases/clase-${id}/anuncio-${announcement.id}`}>Ver hilo</a>
+                                    {#if announcement.can_edit}
+                                        <button class="secondary-button manage-btn" type="button" on:click={() => openEditAnnouncement(announcement)}>
+                                            Editar
+                                        </button>
+                                    {/if}
+                                    {#if announcement.can_delete}
+                                        <button class="secondary-button manage-btn danger-btn" type="button" on:click={() => deleteAnnouncement(announcement.id)}>
+                                            Eliminar
+                                        </button>
+                                    {/if}
                                 </div>
                             </div>
-                            <div class="announcement-title">{announcement.title}</div>
+                            <a class="announcement-title" style="text-decoration: none; display: inline-block;" href={`/clases/clase-${id}/anuncio-${announcement.id}`}>{announcement.title}</a>
                             <div class="announcement-content">{announcement.description}</div>
                             {#if announcement.photos && announcement.photos.length > 0}
                                 <div class="announcement-photos">
@@ -755,10 +1070,19 @@
                                 {#if areYouTeacher}
                                     <span class="task-due">Entregadas: {task.delivered_count ?? 0}</span>
                                     <span class="task-due">Pendientes: {task.pending_count ?? 0}</span>
+                                    <span class="task-due">Por calificar: {task.to_grade_count ?? 0}</span>
                                 {:else}
                                     <span class="task-due">Nota: {task.grade ?? '-'}</span>
                                 {/if}
                                 <a class="secondary-button" href={`/clases/clase-${id}/tarea-${task.id}`}>Ver detalle</a>
+                                {#if areYouTeacher}
+                                    <button class="secondary-button manage-btn" type="button" on:click={() => openEditTask(task)}>
+                                        Editar
+                                    </button>
+                                    <button class="secondary-button manage-btn danger-btn" type="button" on:click={() => deleteTask(task.id)}>
+                                        Eliminar
+                                    </button>
+                                {/if}
                             </div>
 
                             {#if !areYouTeacher && !task.is_delivered}
@@ -817,6 +1141,15 @@
                             <div class="student-name">{student.username}</div>
                             <div class="student-email">{student.email}</div>
                         </div>
+                        {#if areYouTeacher}
+                            <button
+                                class="secondary-button"
+                                type="button"
+                                on:click={() => expulsarAlumno(student.user_id)}
+                            >
+                                Expulsar
+                            </button>
+                        {/if}
                     </div>
                 {/each}
             {/if}
@@ -914,10 +1247,43 @@
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;">
                     Ver calendario
                 </button>
-                <a href="/clases/clase-{id}/dashboard" class="secondary-button" style="width: 100%;">
-                    Configuración
-                </a>
+                <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={abandonarClase}>
+                    Abandonar clase
+                </button>
+                {#if areYouTeacher}
+                    <a href="/clases/clase-{id}/dashboard" class="secondary-button" style="width: 100%;">
+                        Dashboard
+                    </a>
+                {/if}
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .manage-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .forum-sort-select {
+        min-width: 150px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fff;
+    }
+
+    .manage-btn {
+        border-radius: 999px;
+        padding: 8px 12px;
+    }
+
+    .danger-btn {
+        border-color: #f2b8b5;
+        color: #b42318;
+        background: #fff5f5;
+    }
+</style>

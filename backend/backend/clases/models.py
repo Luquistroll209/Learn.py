@@ -122,6 +122,32 @@ class Announcement(models.Model):
         return f"{self.title} - {self.clase.name}"
 
 
+class AnnouncementComment(models.Model):
+    announcement = models.ForeignKey(
+        Announcement,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='announcement_comments'
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
+    content = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Comentario {self.id} en anuncio {self.announcement_id}"
+
+
 def task_submission_file_upload_to(instance, filename):
     safe_name = get_valid_filename(filename)
     unique_name = f"{uuid.uuid4().hex}_{safe_name}"

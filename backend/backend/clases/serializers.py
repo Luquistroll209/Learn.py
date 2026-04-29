@@ -4,6 +4,7 @@ from clases.models import (
     Clase,
     ClaseMembership,
     Announcement,
+    AnnouncementComment,
     Task,
     TaskSubmission,
     TaskSubmissionFile,
@@ -14,6 +15,11 @@ from clases.utils import normalize_extensions, save_image_as_webp
 class AnnouncementSerializer(serializers.ModelSerializer):
     creator_info = serializers.SerializerMethodField()
     is_teacher = serializers.SerializerMethodField()
+    clase_public_id = serializers.CharField(source='clase_id', read_only=True)
+    comments_count = serializers.SerializerMethodField()
+    last_activity_at = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+    can_delete = serializers.SerializerMethodField()
     clase_id = serializers.CharField(write_only=True)
     
     class Meta:
@@ -22,12 +28,18 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             'id', 
             'title', 
             'clase_id',
+            'clase_public_id',
             'description', 
             'photos', 
             'urls', 
             'creator_info',
             'is_teacher',
-            'created_at'
+            'comments_count',
+            'last_activity_at',
+            'can_edit',
+            'can_delete',
+            'created_at',
+            'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -62,6 +74,95 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             return membership.role == 'teacher'
         except ClaseMembership.DoesNotExist:
             return False
+
+    def get_comments_count(self, obj):
+        annotated_count = getattr(obj, 'comments_count_annotated', None)
+        if annotated_count is not None:
+            return annotated_count
+        return obj.comments.count()
+
+    def get_last_activity_at(self, obj):
+        annotated_last_activity = getattr(obj, 'last_activity_at_annotated', None)
+        if annotated_last_activity:
+            return annotated_last_activity
+        last_comment_at = (
+            obj.comments.order_by('-created_at').values_list('created_at', flat=True).first()
+        )
+        return last_comment_at or obj.updated_at
+
+    def _can_manage(self, obj):
+        user = self.context.get('user')
+        if not user:
+            return False
+        if obj.created_by_id == user.id:
+            return True
+        if obj.clase.teacher_id == user.id:
+            return True
+        membership = ClaseMembership.objects.filter(user=user, clase=obj.clase).first()
+        return bool(membership and membership.role == 'teacher')
+
+    def get_can_edit(self, obj):
+        return self._can_manage(obj)
+
+    def get_can_delete(self, obj):
+        return self._can_manage(obj)
+
+
+class AnnouncementCommentSerializer(serializers.ModelSerializer):
+    author_info = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+    can_delete = serializers.SerializerMethodField()
+    replies_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AnnouncementComment
+        fields = [
+            'id',
+            'announcement_id',
+            'parent_id',
+            'content',
+            'author_info',
+            'can_edit',
+            'can_delete',
+            'replies_count',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'announcement_id', 'parent_id', 'author_info', 'created_at', 'updated_at']
+
+    def get_author_info(self, obj):
+        author = obj.author
+        return {
+            'id': author.id,
+            'username': author.username,
+            'first_name': author.first_name or '',
+            'last_name': author.last_name or '',
+            'email': author.email
+        }
+
+    def _is_teacher(self, obj, user):
+        if not user:
+            return False
+        clase = obj.announcement.clase
+        if clase.teacher_id == user.id:
+            return True
+        membership = ClaseMembership.objects.filter(user=user, clase=clase).first()
+        return bool(membership and membership.role == 'teacher')
+
+    def get_can_edit(self, obj):
+        user = self.context.get('user')
+        if not user:
+            return False
+        return obj.author_id == user.id or self._is_teacher(obj, user)
+
+    def get_can_delete(self, obj):
+        return self.get_can_edit(obj)
+
+    def get_replies_count(self, obj):
+        annotated_count = getattr(obj, 'replies_count_annotated', None)
+        if annotated_count is not None:
+            return annotated_count
+        return obj.replies.count()
         
 class ClaseSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(required=False, allow_null=True, write_only=True)
