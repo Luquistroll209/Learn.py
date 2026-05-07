@@ -1,10 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
-    import { redirect } from '@sveltejs/kit';
     import { urlip, urlMedia } from '$lib/config';
     import imgDefault from '$lib/images/classDefault.webp';
-    import type { PageLoad } from './$types';
     import '$lib/style/Clases.css'
     
     let clases: any[] = [];
@@ -22,26 +20,14 @@
     const year = currentDate.getFullYear();
     const formattedDate = `${dayName}, ${dayNumber} de ${monthName} de ${year}`;
     
-    // Datos estáticos para el dashboard
-    const recentActivity = [
-        { type: 'grade', class: 'Programación Web', message: 'Nueva calificación: 9.5 en Práctica 1', time: 'Hace 2 horas' },
-        { type: 'announcement', class: 'Bases de Datos', message: 'Nuevo anuncio: Cambio de horario de examen', time: 'Hace 5 horas' },
-        { type: 'task', class: 'Diseño de Interfaces', message: 'Nueva tarea asignada: Mockup App', time: 'Ayer' },
-        { type: 'material', class: 'Algoritmos', message: 'Nuevo material disponible: Tema 4', time: 'Hace 2 días' }
-    ];
-    
-    const upcomingTasks = [
-        { class: 'Programación Web', title: 'Proyecto Final - Primera Entrega', date: '15 Ene', priority: 'high' },
-        { class: 'Bases de Datos', title: 'Práctica SQL Avanzado', date: '18 Ene', priority: 'medium' },
-        { class: 'Diseño de Interfaces', title: 'Mockup App Móvil', date: '20 Ene', priority: 'high' },
-        { class: 'Programación Web', title: 'Ejercicios Tema 2', date: '22 Ene', priority: 'low' }
-    ];
+    let recentActivity: any[] = [];
+    let upcomingTasks: any[] = [];
     
     // Estadísticas
     let totalClases = 0;
     let tareasPendientes = 0;
-    let tareasCompletadas = 12; // Valor por defecto
-    let promedioGeneral = 9.2; // Valor por defecto
+    let tareasCompletadas = 0;
+    let promedioGeneral: string | number = '-';
 
     function toggleMenu(index: number) {
         desplegado = desplegado === index ? null : index;
@@ -52,8 +38,13 @@
         desplegado = null;
     }
 
-    function verTareas(name: string) {
-        alert(`Ver tareas de "${name}"`);
+    function verTareas(id?: string | number) {
+        if (!browser) return;
+        if (id) {
+            window.location.href = `/clases/tareas?clase=${id}`;
+            return;
+        }
+        window.location.href = '/clases/tareas';
     }
 
     function abrirForo(name: string) {
@@ -64,11 +55,11 @@
         alert(`Ver materiales de "${name}"`);
     }
     
-    function configurarClase(id: number, name: string) {
+    function configurarClase(id: string | number, name: string) {
         alert(`Configurar clase: ${name}`);
     }
     
-    function invitarClase(id: number, name: string) {
+    function invitarClase(id: string | number, name: string) {
         alert(`Invitar a clase: ${name}`);
     }
     
@@ -82,10 +73,18 @@
         alert('Abriendo calendario');
     }
 
-    function verDetallesClase(id: number) {
+    function verDetallesClase(id: string | number) {
         if (browser) {
             window.location.href = `/clases/clase-${id}`;
         }
+    }
+
+    function getClassImageSource(clase: any): string {
+        if (!clase?.imagen_url) return imgDefault;
+        if (String(clase.imagen_url).startsWith('http://') || String(clase.imagen_url).startsWith('https://')) {
+            return clase.imagen_url;
+        }
+        return `${urlMedia}${String(clase.imagen_url).replace(/^\/+/, '')}`;
     }
 
     // Función original para cargar clases
@@ -104,16 +103,16 @@
         const data = await response.json();
 
         if (response.ok) {
-            console.log(data);
-            
             clases = data.clases || [];
-            
-            // Actualizar estadísticas
-            totalClases = clases.length;
-            tareasPendientes = clases.reduce((total, clase) => {
-                return total + (clase.tareas_pendientes || clase.pending_tasks || 0);
-            }, 0);
-            
+
+            const stats = data.stats || {};
+            totalClases = Number(stats.active_classes ?? clases.length ?? 0);
+            tareasCompletadas = Number(stats.completed_tasks ?? 0);
+            tareasPendientes = Number(stats.pending_tasks ?? 0);
+            promedioGeneral = stats.average_grade ?? '-';
+
+            recentActivity = Array.isArray(data.recent_activity) ? data.recent_activity : [];
+            upcomingTasks = Array.isArray(data.upcoming_tasks) ? data.upcoming_tasks : [];
         } else {
             console.error("Error cargando clases");
         }
@@ -136,16 +135,6 @@
             }
         }
     });
-
-    export const load: PageLoad = async () => {
-        if (browser) {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw redirect(302, '/auth/login');
-            }
-        }
-        return {};
-    };
 </script>
 
 <div class="dashboard-container">
@@ -230,7 +219,7 @@
                         <i class="fa-solid fa-graduation-cap"></i>
                         Mis Clases
                     </h2>
-                    <a href="#" class="view-all">Ver todas →</a>
+                    <button class="view-all" on:click={recargarClases}>Actualizar</button>
                 </div>
                 
                 {#if clases.length === 0}
@@ -251,7 +240,7 @@
                                 <div class="clase-img-container">
                                     <div class="clase-link-overlay" on:click={() => verDetallesClase(clase.id)}>
                                         {#if clase.imagen_url}
-                                            <img src={urlMedia}{clase.imagen_url} alt={clase.name} class="portada">
+                                            <img src={getClassImageSource(clase)} alt={clase.name} class="portada">
                                         {:else}
                                             <div class="default-class-bg" style="background: #1a73e8">
                                             </div>
@@ -264,10 +253,10 @@
                                         </div>
                                         
                                         <!-- Badge de tareas pendientes -->
-                                        {#if (clase.tareas_pendientes || clase.pending_tasks) > 0}
+                                        {#if (clase.pending_tasks || clase.tareas_pendientes || 0) > 0}
                                             <div class="class-info">
                                                 <i class="fa-solid fa-clock"></i>
-                                                {clase.tareas_pendientes || clase.pending_tasks} pendiente{(clase.tareas_pendientes || clase.pending_tasks) > 1 ? 's' : ''}
+                                                {clase.pending_tasks || clase.tareas_pendientes} pendiente{(clase.pending_tasks || clase.tareas_pendientes) > 1 ? 's' : ''}
                                             </div>
                                         {/if}
                                     </div>
@@ -293,7 +282,7 @@
                                 </div>
                                 
                                 <div class="clase-footer">
-                                    <button class="footer-icon-btn" on:click|stopPropagation={() => verTareas(clase.name)} title="Próximas tareas">
+                                    <button class="footer-icon-btn" on:click|stopPropagation={() => verTareas(clase.id)} title="Próximas tareas">
                                         <i class="fa-solid fa-list-check"></i>
                                     </button>
                                     <button class="footer-icon-btn" on:click|stopPropagation={() => abrirForo(clase.name)} title="Foro de clase">
@@ -326,20 +315,25 @@
                     <div class="card-title">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         Próximas Entregas
+                        <button class="view-all" on:click={() => verTareas()}>Ver todas</button>
                     </div>
-                    {#each upcomingTasks as task}
-                        <div class="task-list-item {task.priority}">
-                            <div class="task-class-label">
-                                <i class="fa-solid fa-book"></i>
-                                {task.class}
+                    {#if upcomingTasks.length === 0}
+                        <div class="activity-message">No hay entregas próximas.</div>
+                    {:else}
+                        {#each upcomingTasks as task}
+                            <div class="task-list-item {task.priority}">
+                                <div class="task-class-label">
+                                    <i class="fa-solid fa-book"></i>
+                                    {task.class}
+                                </div>
+                                <div class="task-list-title">{task.title}</div>
+                                <div class="task-list-date">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                    {task.date}
+                                </div>
                             </div>
-                            <div class="task-list-title">{task.title}</div>
-                            <div class="task-list-date">
-                                <i class="fa-solid fa-calendar-day"></i>
-                                {task.date}
-                            </div>
-                        </div>
-                    {/each}
+                        {/each}
+                    {/if}
                 </div>
                 
                 <!-- Recent Activity -->
@@ -348,32 +342,36 @@
                         <i class="fa-solid fa-bell"></i>
                         Actividad Reciente
                     </div>
-                    {#each recentActivity as activity}
-                        <div class="activity-item">
-                            <div class="activity-icon {activity.type}">
-                                {#if activity.type === 'grade'}
-                                    <i class="fa-solid fa-star"></i>
-                                {:else if activity.type === 'announcement'}
-                                    <i class="fa-solid fa-bullhorn"></i>
-                                {:else if activity.type === 'task'}
-                                    <i class="fa-solid fa-tasks"></i>
-                                {:else}
-                                    <i class="fa-solid fa-file-lines"></i>
-                                {/if}
-                            </div>
-                            <div class="activity-content">
-                                <div class="activity-class">
-                                    <i class="fa-solid fa-book"></i>
-                                    {activity.class}
+                    {#if recentActivity.length === 0}
+                        <div class="activity-message">Todavía no hay actividad reciente.</div>
+                    {:else}
+                        {#each recentActivity as activity}
+                            <div class="activity-item">
+                                <div class="activity-icon {activity.type}">
+                                    {#if activity.type === 'grade'}
+                                        <i class="fa-solid fa-star"></i>
+                                    {:else if activity.type === 'announcement'}
+                                        <i class="fa-solid fa-bullhorn"></i>
+                                    {:else if activity.type === 'task'}
+                                        <i class="fa-solid fa-tasks"></i>
+                                    {:else}
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    {/if}
                                 </div>
-                                <div class="activity-message">{activity.message}</div>
-                                <div class="activity-time">
-                                    <i class="fa-solid fa-clock"></i>
-                                    {activity.time}
+                                <div class="activity-content">
+                                    <div class="activity-class">
+                                        <i class="fa-solid fa-book"></i>
+                                        {activity.class}
+                                    </div>
+                                    <div class="activity-message">{activity.message}</div>
+                                    <div class="activity-time">
+                                        <i class="fa-solid fa-clock"></i>
+                                        {activity.time}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {/each}
+                        {/each}
+                    {/if}
                 </div>
             </div>
         </div>

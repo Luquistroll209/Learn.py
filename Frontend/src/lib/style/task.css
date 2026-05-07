@@ -451,3 +451,35 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+@media (max-width: 480px) {
+    .task-title-block h1 {
+        font-size: 24px;
+    }
+
+    .task-icon-circle {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .task-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-chip {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .grade-panel {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .grade-input {
+        width: 100%;
+    }
+}

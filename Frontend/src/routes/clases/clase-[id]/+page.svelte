@@ -24,6 +24,9 @@
     let showCreateTask = false;
 
     let areYouTeacher = false;
+    let isClassOwner = false;
+    let myRole = '';
+    let currentUserId: number | null = null;
     let isSubmittingTask = false;
     let tasksLoading = false;
     let tasks: any[] = [];
@@ -166,6 +169,12 @@
         }
     }
 
+    function roleLabel(role: string): string {
+        if (role === 'teacher') return 'Profesor';
+        if (role === 'assistant') return 'Asistente';
+        return 'Alumno';
+    }
+
     async function loadClass() {
         const token = localStorage.getItem('token');
         
@@ -182,6 +191,9 @@
 
             if (response.ok){
                 clase = data || {};
+                isClassOwner = Boolean(clase.is_class_owner);
+                myRole = String(clase.my_role || '');
+                currentUserId = Number(clase.current_user_id || 0) || null;
                 hydrateClassMembers();
             } else {
                 showAlert("Error", data?.Error || "No se pudo cargar la clase", "red");
@@ -624,6 +636,31 @@
         }
         showAlert("Listo", "Has abandonado la clase", "green");
         window.location.href = '/clases';
+    }
+
+    async function actualizarRolMiembro(userId: number, role: string) {
+        if (!isClassOwner) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${urlip}class/updateMemberRole/${id}/${userId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': `${token}`
+            },
+            body: JSON.stringify({ role })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            showAlert("Error", data?.Error || "No se pudo actualizar el rol", "red");
+            await loadClass();
+            return;
+        }
+
+        showAlert("Listo", "Rol actualizado", "green");
+        await loadClass();
+        await loadTasks();
     }
 
 </script>
@@ -1116,7 +1153,7 @@
             {#if activeTab === 'personas'}
                 <div class="card-title">    
                     Profesores
-                    {#if areYouTeacher}
+                    {#if isClassOwner}
                         <button on:click={() => showInviteModal = true} class="addPerson"><i class="fa-solid fa-person-circle-plus"></i></button>
                     {/if}
                 </div>
@@ -1127,7 +1164,20 @@
                         <div class="student-info">
                             <div class="student-name">{teacher.username}</div>
                             <div class="student-email">{teacher.email}</div>
+                            <div class="student-email">Rol: {roleLabel(teacher.role)}</div>
                         </div>
+                        {#if isClassOwner}
+                            <select
+                                class="forum-sort-select"
+                                value={teacher.role}
+                                disabled={currentUserId === teacher.user_id}
+                                on:change={(event) => actualizarRolMiembro(teacher.user_id, (event.currentTarget as HTMLSelectElement).value)}
+                            >
+                                <option value="teacher">Profesor</option>
+                                <option value="assistant">Asistente</option>
+                                <option value="student">Alumno</option>
+                            </select>
+                        {/if}
                     </div>
                 {/each}
                 
@@ -1140,8 +1190,21 @@
                         <div class="student-info">
                             <div class="student-name">{student.username}</div>
                             <div class="student-email">{student.email}</div>
+                            <div class="student-email">Rol: {roleLabel(student.role)}</div>
                         </div>
-                        {#if areYouTeacher}
+                        {#if isClassOwner}
+                            <select
+                                class="forum-sort-select"
+                                value={student.role}
+                                disabled={currentUserId === student.user_id}
+                                on:change={(event) => actualizarRolMiembro(student.user_id, (event.currentTarget as HTMLSelectElement).value)}
+                            >
+                                <option value="student">Alumno</option>
+                                <option value="assistant">Asistente</option>
+                                <option value="teacher">Profesor</option>
+                            </select>
+                        {/if}
+                        {#if isClassOwner}
                             <button
                                 class="secondary-button"
                                 type="button"

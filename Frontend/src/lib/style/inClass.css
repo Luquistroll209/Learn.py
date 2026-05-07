@@ -749,12 +749,120 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .class-content {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        gap: 14px;
+    }
+}
+
 @media (max-width: 768px) {
     body {
         padding-top: calc(64px + 12px);
         padding-left: 12px;
         padding-right: 12px;
         padding-bottom: 12px;
+    }
+
+    .class-header {
+        padding: 28px 18px;
+    }
+
+    .class-header h1 {
+        font-size: 26px;
+    }
+
+    .class-header p {
+        font-size: 14px;
+    }
+
+    .class-tabs {
+        padding: 0 10px;
+    }
+
+    .tab-button {
+        padding: 14px 14px;
+        font-size: 14px;
+    }
+
+    .main-content {
+        padding: 16px;
+    }
+
+    .card {
+        padding: 14px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .announcement-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .task-item {
+        padding: 12px;
+    }
+
+    .task-icon {
+        width: 42px;
+        height: 42px;
+        margin-right: 8px;
+        font-size: 18px;
+    }
+
+    .task-meta-row,
+    .task-submit-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .student-item {
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .student-info {
+        margin-left: 0;
+    }
+
+    .modal-card {
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .class-header h1 {
+        font-size: 22px;
+    }
+
+    .class-tabs {
+        gap: 2px;
+    }
+
+    .tab-button {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+
+    .announcement-photos {
+        grid-template-columns: 1fr;
+    }
+
+    .action-button,
+    .secondary-button {
+        width: 100%;
+        justify-content: center;
     }
 }
 

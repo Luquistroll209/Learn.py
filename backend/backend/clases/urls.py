@@ -5,9 +5,11 @@ from .views import (
     inviteUser,
     JoinClassAutoView,
     obtainClassByID,
+    ObtainUserTasksOverviewView,
     ObtainClassDashboardView,
     UpdateClassSettingsView,
     RemoveClassMemberView,
+    UpdateClassMemberRoleView,
     LeaveClassView,
     CreateAnnouncementView,
     ObtainAnnouncementsView,
@@ -27,6 +29,7 @@ urlpatterns = [
     #URLs - obtención de datos
     path('obtainClass/', obtainClass.as_view(), name='obtainClass'),
     path('obtainClassByID/<str:identifier>', obtainClassByID.as_view(), name='obtainClassByID'),
+    path('obtainUserTasks/', ObtainUserTasksOverviewView.as_view(), name='obtain-user-tasks'),
     path('obtainClassDashboard/<str:clase_id>/', ObtainClassDashboardView.as_view(), name='obtain-class-dashboard'),
     #creación y gestion
     path('createClass/', CreateClassView.as_view(), name='createClass'),
@@ -37,6 +40,7 @@ urlpatterns = [
     path('join/<str:clase_id>/', JoinClassAutoView.as_view(), name='join-class-auto'),
     path('leaveClass/<str:clase_id>/', LeaveClassView.as_view(), name='leave-class'),
     path('removeMember/<str:clase_id>/<int:user_id>/', RemoveClassMemberView.as_view(), name='remove-member'),
+    path('updateMemberRole/<str:clase_id>/<int:user_id>/', UpdateClassMemberRoleView.as_view(), name='update-member-role'),
 
     #Post de clases
     path('createAnnouncement/', CreateAnnouncementView.as_view(), name='create-announcement'),

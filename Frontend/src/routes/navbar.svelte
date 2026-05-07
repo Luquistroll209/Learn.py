@@ -225,7 +225,7 @@
         </li>
         {#if islogged} 
             <li class="nav-item">
-                <a href="/clases/" class="nav-link" on:click={handleNavLinkClick}>Tareas</a>
+                <a href="/clases/tareas/" class="nav-link" on:click={handleNavLinkClick}>Tareas</a>
             </li>
         {/if}
         <li class="nav-item">

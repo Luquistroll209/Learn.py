@@ -238,6 +238,10 @@ body {
     font-weight: 500;
     font-size: 14px;
     transition: color 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
 }
 
 .view-all:hover {
@@ -656,7 +660,12 @@ body {
         width: 100%;
         flex-direction: column;
     }
-    
+
+    .section-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
     .quick-action-btn {
         width: 100%;
     }
@@ -667,6 +676,15 @@ body {
     
     .clases-grid {
         grid-template-columns: 1fr;
+    }
+
+    .clase-footer {
+        justify-content: space-between;
+        padding: 10px 12px;
+    }
+
+    .sidebar-section {
+        gap: 14px;
     }
 }
 

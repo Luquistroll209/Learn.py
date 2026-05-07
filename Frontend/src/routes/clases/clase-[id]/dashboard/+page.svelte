@@ -76,6 +76,9 @@
 
     let activeTab = 'alumnos';
     let isLoading = true;
+    let isClassOwner = false;
+    let myRole = '';
+    let currentUserId: number | null = null;
     let classData: any = {};
     let teachers: any[] = [];
     let students: StudentRow[] = [];
@@ -224,6 +227,12 @@
         return 'Pendiente';
     }
 
+    function roleLabel(role?: string): string {
+        if (role === 'teacher') return 'Profesor';
+        if (role === 'assistant') return 'Asistente';
+        return 'Alumno';
+    }
+
     function displayName(user: { username?: string; first_name?: string; last_name?: string }) {
         const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
         return fullName || user.username || 'Usuario';
@@ -261,6 +270,9 @@
             }
 
             classData = data.clase || {};
+            isClassOwner = Boolean(data?.is_class_owner);
+            myRole = String(data?.my_role || '');
+            currentUserId = Number(data?.current_user_id || 0) || null;
             classSettingsName = classData.name || '';
             classSettingsDescription = classData.description || '';
             classSettingsBannerFile = null;
@@ -354,6 +366,34 @@
             showInviteModal = false;
         } catch (error) {
             showAlert('Error', 'Error de conexión al enviar invitación', 'red');
+        }
+    }
+
+    async function actualizarRolMiembro(userId: number, role: string) {
+        if (!isClassOwner) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${urlip}class/updateMemberRole/${id}/${userId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    authorization: token
+                },
+                body: JSON.stringify({ role })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                showAlert('Error', data?.Error || 'No se pudo actualizar el rol', 'red');
+                await loadDashboard(true);
+                return;
+            }
+
+            showAlert('Listo', 'Rol actualizado', 'green');
+            await loadDashboard(true);
+        } catch (error) {
+            showAlert('Error', 'Error de conexión al actualizar rol', 'red');
         }
     }
 
@@ -859,7 +899,7 @@
             <div class="dashboard-badge">Panel de profesorado</div>
             <h1>{classData.name || 'Clase'} · Dashboard</h1>
             <p>{classData.description || 'Gestión académica y seguimiento de entregas'}</p>
-            <p>Docente principal: {classData.teacher_name || '-'}</p>
+            <p>Docente principal: {classData.teacher_name || '-'} · Tu rol: {myRole === 'assistant' ? 'Asistente' : 'Profesor'}</p>
             <div class="dashboard-mini-stats">
                 <div><span>Alumnos</span><strong>{stats.total_students}</strong></div>
                 <div><span>Tareas</span><strong>{stats.total_tasks}</strong></div>
@@ -886,7 +926,9 @@
             {#if !isLoading && activeTab === 'alumnos'}
                 <div class="card-title">
                     Alumnos ({students.length})
-                    <button class="action-button" on:click={() => showInviteModal = true}>Invitar alumno</button>
+                    {#if isClassOwner}
+                        <button class="action-button" on:click={() => showInviteModal = true}>Invitar alumno</button>
+                    {/if}
                 </div>
 
                 {#if students.length === 0}
@@ -906,10 +948,23 @@
                                         • Promedio: {student.average_grade}/10
                                     {/if}
                                 </div>
+                                <div class="student-email">Rol: {roleLabel(student.role)}</div>
                             </div>
                             <span class="task-status {parseStudentStatusClass(student.status)}">
                                 {parseStudentStatusLabel(student.status)}
                             </span>
+                            {#if isClassOwner}
+                                <select
+                                    class="forum-sort-select"
+                                    value={student.role || 'student'}
+                                    disabled={currentUserId === student.id}
+                                    on:change={(event) => actualizarRolMiembro(student.id, (event.currentTarget as HTMLSelectElement).value)}
+                                >
+                                    <option value="student">Alumno</option>
+                                    <option value="assistant">Asistente</option>
+                                    <option value="teacher">Profesor</option>
+                                </select>
+                            {/if}
                         </div>
                     {/each}
                 {/if}
@@ -1043,32 +1098,37 @@
             {#if !isLoading && activeTab === 'configuracion'}
                 <div class="card-title">Configuración de clase</div>
                 <div class="card">
+                    {#if !isClassOwner}
+                        <div class="announcement-item">
+                            <div class="announcement-title">Solo el profesor principal puede modificar esta sección.</div>
+                        </div>
+                    {/if}
                     <div class="form-group">
                         <label for="classSettingsName">Nombre de la clase</label>
-                        <input id="classSettingsName" type="text" bind:value={classSettingsName} required />
+                        <input id="classSettingsName" type="text" bind:value={classSettingsName} required disabled={!isClassOwner} />
                     </div>
                     <div class="form-group">
                         <label for="classSettingsDescription">Descripción</label>
-                        <textarea id="classSettingsDescription" rows="4" bind:value={classSettingsDescription}></textarea>
+                        <textarea id="classSettingsDescription" rows="4" bind:value={classSettingsDescription} disabled={!isClassOwner}></textarea>
                     </div>
                     <div class="form-group">
                         <label for="classSettingsBanner">Actualizar banner</label>
-                        <input id="classSettingsBanner" type="file" accept="image/*" on:change={handleClassSettingsBanner} />
+                        <input id="classSettingsBanner" type="file" accept="image/*" on:change={handleClassSettingsBanner} disabled={!isClassOwner} />
                         {#if classSettingsBannerFile}
                             <div class="task-due" style="margin-top: 8px;">Nuevo archivo: {classSettingsBannerFile.name}</div>
                         {/if}
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" bind:checked={removeCurrentBanner} />
+                            <input type="checkbox" bind:checked={removeCurrentBanner} disabled={!isClassOwner} />
                             Quitar banner actual
                         </label>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                        <button class="action-button" on:click={saveClassSettings} disabled={isSavingClassSettings}>
+                        <button class="action-button" on:click={saveClassSettings} disabled={isSavingClassSettings || !isClassOwner}>
                             {isSavingClassSettings ? 'Guardando...' : 'Guardar cambios'}
                         </button>
-                        <button class="secondary-button" on:click={() => { classSettingsName = classData.name || ''; classSettingsDescription = classData.description || ''; classSettingsBannerFile = null; removeCurrentBanner = false; }}>
+                        <button class="secondary-button" on:click={() => { classSettingsName = classData.name || ''; classSettingsDescription = classData.description || ''; classSettingsBannerFile = null; removeCurrentBanner = false; }} disabled={!isClassOwner}>
                             Revertir
                         </button>
                     </div>
@@ -1102,15 +1162,19 @@
 
             <div class="card">
                 <div class="card-title">Acciones</div>
-                <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => showInviteModal = true}>
-                    Invitar alumnos
-                </button>
+                {#if isClassOwner}
+                    <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => showInviteModal = true}>
+                        Invitar alumnos
+                    </button>
+                {/if}
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => showCreateTaskModal = true}>
                     Crear tarea
                 </button>
-                <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => activeTab = 'configuracion'}>
-                    Configurar clase
-                </button>
+                {#if isClassOwner}
+                    <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => activeTab = 'configuracion'}>
+                        Configurar clase
+                    </button>
+                {/if}
                 <button class="secondary-button" style="width: 100%; margin-bottom: 8px;" on:click={() => loadDashboard()}>
                     Recargar
                 </button>
@@ -1130,7 +1194,20 @@
                             <div class="student-info">
                                 <div class="student-name">{displayName(teacher)}</div>
                                 <div class="student-email">{teacher.email}</div>
+                                <div class="student-email">Rol: {roleLabel(teacher.role)}</div>
                             </div>
+                            {#if isClassOwner}
+                                <select
+                                    class="forum-sort-select"
+                                    value={teacher.role || 'teacher'}
+                                    disabled={currentUserId === teacher.id}
+                                    on:change={(event) => actualizarRolMiembro(teacher.id, (event.currentTarget as HTMLSelectElement).value)}
+                                >
+                                    <option value="teacher">Profesor</option>
+                                    <option value="assistant">Asistente</option>
+                                    <option value="student">Alumno</option>
+                                </select>
+                            {/if}
                         </div>
                     {/each}
                 {/if}
@@ -1224,6 +1301,16 @@
         border: 1px solid var(--border-color);
     }
 
+    .forum-sort-select {
+        min-width: 132px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #ffffff;
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+
     .dashboard-shell {
         background: linear-gradient(180deg, #f7f8fb 0%, #eef2f7 100%);
     }
@@ -1290,6 +1377,12 @@
             flex-direction: column;
             align-items: stretch;
             gap: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .student-item .forum-sort-select {
+            width: 100%;
         }
     }
 </style>

@@ -53,15 +53,19 @@ def get_membership(user, clase):
     return ClaseMembership.objects.filter(user=user, clase=clase).select_related('user').first()
 
 
+def is_class_owner(user, clase):
+    return clase.teacher_id == user.id
+
+
 def is_teacher_in_class(user, clase, membership=None):
-    if clase.teacher_id == user.id:
+    if is_class_owner(user, clase):
         return True
     membership = membership or get_membership(user, clase)
-    return bool(membership and membership.role == 'teacher')
+    return bool(membership and membership.role in ('teacher', 'assistant'))
 
 
 def is_user_in_class(user, clase):
-    if clase.teacher_id == user.id:
+    if is_class_owner(user, clase):
         return True
     return ClaseMembership.objects.filter(user=user, clase=clase).exists()
 
@@ -133,7 +137,7 @@ def build_teacher_task_participants(task, request=None):
         user_info = get_user_info(membership.user, membership.role)
         class_members.append(user_info)
 
-        if membership.role == 'teacher':
+        if membership.role in ('teacher', 'assistant'):
             continue
 
         submission = submissions_map.get(membership.user_id)
@@ -220,6 +224,413 @@ def parse_grade_input(raw_grade):
         raise ValueError('grade debe estar entre 0 y 10')
 
     return quantize_grade(grade)
+
+
+def format_relative_time(value, now=None):
+    if not value:
+        return ''
+    now = now or timezone.now()
+    delta = now - value
+    seconds = max(int(delta.total_seconds()), 0)
+    if seconds < 60:
+        return 'Hace un momento'
+
+    minutes = seconds // 60
+    if minutes < 60:
+        return f'Hace {minutes} minuto{"s" if minutes != 1 else ""}'
+
+    hours = minutes // 60
+    if hours < 24:
+        return f'Hace {hours} hora{"s" if hours != 1 else ""}'
+
+    days = hours // 24
+    if days < 7:
+        return f'Hace {days} día{"s" if days != 1 else ""}'
+
+    return value.strftime('%d/%m/%Y')
+
+
+def build_user_classes_overview(user, request=None):
+    memberships = list(
+        ClaseMembership.objects
+        .filter(user=user)
+        .select_related('clase', 'clase__teacher')
+        .order_by('-joined_at')
+    )
+
+    membership_by_class_id = {membership.clase_id: membership for membership in memberships}
+    owned_without_membership = list(
+        Clase.objects
+        .filter(teacher=user)
+        .exclude(id__in=membership_by_class_id.keys())
+        .select_related('teacher')
+        .order_by('-created_at')
+    )
+
+    classes = [membership.clase for membership in memberships] + owned_without_membership
+    if not classes:
+        return {
+            'clases': [],
+            'stats': {
+                'active_classes': 0,
+                'completed_tasks': 0,
+                'pending_tasks': 0,
+                'average_grade': None,
+            },
+            'upcoming_tasks': [],
+            'recent_activity': [],
+        }
+
+    class_ids = [clase.id for clase in classes]
+    role_by_class_id = {membership.clase_id: membership.role for membership in memberships}
+    for clase in owned_without_membership:
+        role_by_class_id[clase.id] = 'teacher'
+
+    classes_serialized = ClaseSerializer(classes, many=True, context={'request': request}).data
+    class_data_by_id = {item['id']: item for item in classes_serialized}
+
+    now = timezone.now()
+    all_tasks = list(
+        Task.objects
+        .filter(clase_id__in=class_ids)
+        .select_related('clase')
+        .order_by('due_at', '-created_at')
+    )
+    tasks_by_class_id = {}
+    for task in all_tasks:
+        tasks_by_class_id.setdefault(task.clase_id, []).append(task)
+
+    task_ids = [task.id for task in all_tasks]
+    user_submissions = list(
+        TaskSubmission.objects
+        .filter(task_id__in=task_ids, student=user)
+        .select_related('task')
+    )
+    user_submission_by_task_id = {submission.task_id: submission for submission in user_submissions}
+
+    graded_submissions = list(
+        TaskSubmission.objects
+        .filter(task_id__in=task_ids, grade__isnull=False)
+        .select_related('task')
+    )
+    class_grade_totals = {}
+    class_grade_counts = {}
+    for submission in graded_submissions:
+        class_id = submission.task.clase_id
+        class_grade_totals[class_id] = class_grade_totals.get(class_id, Decimal('0')) + Decimal(submission.grade)
+        class_grade_counts[class_id] = class_grade_counts.get(class_id, 0) + 1
+
+    completed_tasks_total = 0
+    pending_tasks_total = 0
+    overall_grade_total = Decimal('0')
+    overall_grade_count = 0
+    upcoming_tasks = []
+
+    for clase in classes:
+        class_id = clase.id
+        role = role_by_class_id.get(class_id, 'student')
+        class_data = class_data_by_id.get(class_id, {})
+        class_tasks = tasks_by_class_id.get(class_id, [])
+
+        if role in ('teacher', 'assistant'):
+            open_tasks = [task for task in class_tasks if not task.due_at or task.due_at >= now]
+            pending_count = len(open_tasks)
+            completed_count = max(len(class_tasks) - pending_count, 0)
+            avg_grade = grade_average_to_response(
+                class_grade_totals.get(class_id, Decimal('0')),
+                class_grade_counts.get(class_id, 0)
+            )
+            overall_grade_total += class_grade_totals.get(class_id, Decimal('0'))
+            overall_grade_count += class_grade_counts.get(class_id, 0)
+            for task in open_tasks:
+                if not task.due_at:
+                    continue
+                days_left = (task.due_at - now).total_seconds() / 86400
+                priority = 'low'
+                if days_left <= 2:
+                    priority = 'high'
+                elif days_left <= 5:
+                    priority = 'medium'
+                upcoming_tasks.append({
+                    'class': clase.name,
+                    'title': task.title,
+                    'date': task.due_at.strftime('%d %b'),
+                    'priority': priority,
+                    'due_at': task.due_at,
+                })
+        else:
+            pending_count = 0
+            completed_count = 0
+            class_grade_total = Decimal('0')
+            class_grade_count = 0
+            for task in class_tasks:
+                submission = user_submission_by_task_id.get(task.id)
+                if submission:
+                    completed_count += 1
+                    if submission.grade is not None:
+                        class_grade_total += Decimal(submission.grade)
+                        class_grade_count += 1
+                        overall_grade_total += Decimal(submission.grade)
+                        overall_grade_count += 1
+                else:
+                    pending_count += 1
+                    if task.due_at and task.due_at >= now:
+                        days_left = (task.due_at - now).total_seconds() / 86400
+                        priority = 'low'
+                        if days_left <= 2:
+                            priority = 'high'
+                        elif days_left <= 5:
+                            priority = 'medium'
+                        upcoming_tasks.append({
+                            'class': clase.name,
+                            'title': task.title,
+                            'date': task.due_at.strftime('%d %b'),
+                            'priority': priority,
+                            'due_at': task.due_at,
+                        })
+
+            avg_grade = grade_average_to_response(class_grade_total, class_grade_count)
+
+        class_data['member_role'] = role
+        class_data['pending_tasks'] = pending_count
+        class_data['completed_tasks'] = completed_count
+        class_data['average_grade'] = avg_grade
+        class_data_by_id[class_id] = class_data
+
+        completed_tasks_total += completed_count
+        pending_tasks_total += pending_count
+
+    upcoming_tasks.sort(key=lambda item: item.get('due_at') or now)
+    for item in upcoming_tasks:
+        item.pop('due_at', None)
+
+    recent_activity = []
+    announcements = (
+        Announcement.objects
+        .filter(clase_id__in=class_ids)
+        .select_related('clase')
+        .order_by('-created_at')[:12]
+    )
+    for announcement in announcements:
+        recent_activity.append({
+            'type': 'announcement',
+            'class': announcement.clase.name,
+            'message': f'Nuevo anuncio: {announcement.title}',
+            'time': format_relative_time(announcement.created_at, now=now),
+            'at': announcement.created_at,
+        })
+
+    tasks_recent = (
+        Task.objects
+        .filter(clase_id__in=class_ids)
+        .select_related('clase')
+        .order_by('-created_at')[:12]
+    )
+    for task in tasks_recent:
+        recent_activity.append({
+            'type': 'task',
+            'class': task.clase.name,
+            'message': f'Nueva tarea: {task.title}',
+            'time': format_relative_time(task.created_at, now=now),
+            'at': task.created_at,
+        })
+
+    user_submissions_recent = (
+        TaskSubmission.objects
+        .filter(task_id__in=task_ids, student=user)
+        .select_related('task__clase')
+        .order_by('-updated_at')[:12]
+    )
+    for submission in user_submissions_recent:
+        recent_activity.append({
+            'type': 'grade' if submission.grade is not None else 'material',
+            'class': submission.task.clase.name,
+            'message': (
+                f'Tarea calificada: {submission.task.title} ({grade_to_response_value(submission.grade)})'
+                if submission.grade is not None
+                else f'Tarea entregada: {submission.task.title}'
+            ),
+            'time': format_relative_time(submission.updated_at, now=now),
+            'at': submission.updated_at,
+        })
+
+    recent_activity.sort(key=lambda item: item.get('at') or now, reverse=True)
+    for item in recent_activity:
+        item.pop('at', None)
+
+    average_grade = None
+    if overall_grade_count:
+        average_grade = grade_average_to_response(overall_grade_total, overall_grade_count)
+
+    return {
+        'clases': [class_data_by_id[clase.id] for clase in classes],
+        'stats': {
+            'active_classes': len(classes),
+            'completed_tasks': completed_tasks_total,
+            'pending_tasks': pending_tasks_total,
+            'average_grade': average_grade,
+        },
+        'upcoming_tasks': upcoming_tasks[:6],
+        'recent_activity': recent_activity[:10],
+    }
+
+
+def build_user_tasks_overview(user, request=None, class_filter=None):
+    memberships = list(
+        ClaseMembership.objects
+        .filter(user=user)
+        .select_related('clase')
+        .order_by('-joined_at')
+    )
+    membership_by_class_id = {membership.clase_id: membership for membership in memberships}
+    owned_without_membership = list(
+        Clase.objects
+        .filter(teacher=user)
+        .exclude(id__in=membership_by_class_id.keys())
+        .order_by('-created_at')
+    )
+
+    classes = [membership.clase for membership in memberships] + owned_without_membership
+    if class_filter:
+        classes = [clase for clase in classes if str(clase.id) == str(class_filter)]
+    if not classes:
+        return {
+            'summary': {
+                'pending_count': 0,
+                'completed_count': 0,
+                'overdue_count': 0,
+                'average_grade': None,
+            },
+            'pending_tasks': [],
+            'completed_tasks': [],
+        }
+
+    role_by_class_id = {membership.clase_id: membership.role for membership in memberships}
+    for clase in owned_without_membership:
+        role_by_class_id[clase.id] = 'teacher'
+
+    class_ids = [clase.id for clase in classes]
+    now = timezone.now()
+
+    tasks = list(
+        Task.objects
+        .filter(clase_id__in=class_ids)
+        .select_related('clase')
+        .order_by('due_at', '-created_at')
+    )
+
+    task_ids = [task.id for task in tasks]
+    user_submissions = (
+        TaskSubmission.objects
+        .filter(task_id__in=task_ids, student=user)
+        .prefetch_related('files')
+    )
+    submissions_by_task_id = {submission.task_id: submission for submission in user_submissions}
+
+    pending_tasks = []
+    completed_tasks = []
+    user_grade_total = Decimal('0')
+    user_grade_count = 0
+
+    def get_priority(due_at):
+        if not due_at:
+            return 'low'
+        days_left = (due_at - now).total_seconds() / 86400
+        if days_left < 0:
+            return 'overdue'
+        if days_left <= 2:
+            return 'high'
+        if days_left <= 5:
+            return 'medium'
+        return 'low'
+
+    for task in tasks:
+        role = role_by_class_id.get(task.clase_id, 'student')
+        submission = submissions_by_task_id.get(task.id)
+        due_at = task.due_at
+        is_overdue = bool(due_at and due_at < now)
+        priority = get_priority(due_at)
+
+        if role in ('teacher', 'assistant'):
+            is_pending = not due_at or due_at >= now
+            is_completed = not is_pending
+            grade_value = None
+            delivered_at = None
+            feedback = ''
+            submission_id = None
+            files_count = 0
+        else:
+            is_pending = submission is None
+            is_completed = submission is not None
+            grade_value = grade_to_response_value(submission.grade) if submission else None
+            delivered_at = submission.delivered_at if submission else None
+            feedback = submission.feedback if submission else ''
+            submission_id = submission.id if submission else None
+            files_count = len(submission.files.all()) if submission else 0
+
+            if submission and submission.grade is not None:
+                user_grade_total += Decimal(submission.grade)
+                user_grade_count += 1
+
+        task_row = {
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'clase_id': task.clase_id,
+            'class_name': task.clase.name,
+            'role': role,
+            'due_at': due_at,
+            'created_at': task.created_at,
+            'photos': task.photos,
+            'urls': task.urls,
+            'photos_count': len(task.photos or []),
+            'urls_count': len(task.urls or []),
+            'is_overdue': is_overdue and is_pending,
+            'priority': priority,
+            'is_delivered': bool(submission) if role == 'student' else None,
+            'submission_id': submission_id,
+            'delivered_at': delivered_at,
+            'grade': grade_value,
+            'feedback': feedback,
+            'files_count': files_count,
+            'status': 'pending' if is_pending else 'completed',
+        }
+
+        if is_pending:
+            pending_tasks.append(task_row)
+        elif is_completed:
+            completed_tasks.append(task_row)
+
+    pending_tasks.sort(
+        key=lambda item: (
+            item.get('due_at') is None,
+            item.get('due_at') or now,
+        )
+    )
+    completed_tasks.sort(
+        key=lambda item: (
+            item.get('delivered_at') is None,
+            -(item.get('delivered_at') or item.get('created_at')).timestamp()
+            if (item.get('delivered_at') or item.get('created_at'))
+            else 0,
+        )
+    )
+
+    average_grade = None
+    if user_grade_count:
+        average_grade = grade_average_to_response(user_grade_total, user_grade_count)
+
+    overdue_count = sum(1 for task in pending_tasks if task['is_overdue'])
+    return {
+        'summary': {
+            'pending_count': len(pending_tasks),
+            'completed_count': len(completed_tasks),
+            'overdue_count': overdue_count,
+            'average_grade': average_grade,
+        },
+        'pending_tasks': pending_tasks,
+        'completed_tasks': completed_tasks,
+    }
 
 
 def build_class_dashboard_payload(clase):
@@ -461,9 +872,19 @@ class obtainClass(APIView):
         if not user:
             return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = TokenUserInfoSerializer(user)
-        clases_data = serializer.data['clases']
-        return Response({'clases': clases_data}, status=status.HTTP_200_OK)
+        overview = build_user_classes_overview(user, request=request)
+        return Response(overview, status=status.HTTP_200_OK)
+
+
+class ObtainUserTasksOverviewView(APIView):
+    def get(self, request):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        class_filter = request.query_params.get('clase_id')
+        data = build_user_tasks_overview(user, request=request, class_filter=class_filter)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class obtainClassByID(APIView):
@@ -481,6 +902,10 @@ class obtainClassByID(APIView):
 
         if not clase:
             return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        membership = ClaseMembership.objects.filter(user=user, clase_id=identifier).first()
+        clase['my_role'] = membership.role if membership else None
+        clase['is_class_owner'] = bool(clase.get('teacher') == user.id)
+        clase['current_user_id'] = user.id
         return Response(clase, status=status.HTTP_200_OK)
 
 
@@ -509,6 +934,9 @@ class ObtainClassDashboardView(APIView):
         return Response(
             {
                 'is_teacher': True,
+                'is_class_owner': is_class_owner(user, clase),
+                'my_role': membership.role if membership else 'teacher',
+                'current_user_id': user.id,
                 'clase': clase_data,
                 **dashboard,
             },
@@ -532,7 +960,7 @@ class inviteUser(APIView):
         try:
             clase = Clase.objects.get(id=clase_id)
             if clase.teacher != user:
-                return Response({'Error': 'Solo el profesor puede invitar usuarios'}, status=status.HTTP_403_FORBIDDEN)
+                return Response({'Error': 'Solo el profesor principal puede invitar usuarios'}, status=status.HTTP_403_FORBIDDEN)
 
             user_to_invite = User.objects.get(email=email)
             if clase.students.filter(id=user_to_invite.id).exists():
@@ -626,10 +1054,9 @@ class UpdateClassSettingsView(APIView):
         except Clase.DoesNotExist:
             return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
-        membership = get_membership(user, clase)
-        if not is_teacher_in_class(user, clase, membership=membership):
+        if not is_class_owner(user, clase):
             return Response(
-                {'Error': 'Solo el profesor puede modificar esta clase'},
+                {'Error': 'Solo el profesor principal puede modificar esta clase'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -681,10 +1108,9 @@ class RemoveClassMemberView(APIView):
         except Clase.DoesNotExist:
             return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
-        membership = get_membership(user, clase)
-        if not is_teacher_in_class(user, clase, membership=membership):
+        if not is_class_owner(user, clase):
             return Response(
-                {'Error': 'Solo el profesor puede expulsar alumnos'},
+                {'Error': 'Solo el profesor principal puede expulsar alumnos'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -700,6 +1126,83 @@ class RemoveClassMemberView(APIView):
         member.delete()
         return Response(
             {'message': 'Miembro expulsado correctamente', 'user_id': user_id},
+            status=status.HTTP_200_OK
+        )
+
+
+class UpdateClassMemberRoleView(APIView):
+    def patch(self, request, clase_id, user_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response({'Error': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            clase = Clase.objects.get(id=clase_id)
+        except Clase.DoesNotExist:
+            return Response({'Error': 'Clase no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not is_class_owner(user, clase):
+            return Response(
+                {'Error': 'Solo el profesor principal puede gestionar roles'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            member = ClaseMembership.objects.select_related('user').get(clase=clase, user_id=user_id)
+        except ClaseMembership.DoesNotExist:
+            return Response({'Error': 'Miembro no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_role = str(request.data.get('role', '')).strip().lower()
+        allowed_roles = {'student', 'assistant', 'teacher'}
+        if new_role not in allowed_roles:
+            return Response(
+                {'Error': 'role inválido. Usa student, assistant o teacher'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_role == 'teacher':
+            if member.user_id == clase.teacher_id:
+                return Response(
+                    {'message': 'Este usuario ya es profesor principal'},
+                    status=status.HTTP_200_OK
+                )
+
+            old_teacher_membership = (
+                ClaseMembership.objects
+                .filter(clase=clase, user_id=clase.teacher_id)
+                .first()
+            )
+            if old_teacher_membership:
+                old_teacher_membership.role = 'assistant'
+                old_teacher_membership.save(update_fields=['role'])
+
+            member.role = 'teacher'
+            member.save(update_fields=['role'])
+            clase.teacher_id = member.user_id
+            clase.save(update_fields=['teacher'])
+            return Response(
+                {
+                    'message': 'Profesor principal transferido correctamente',
+                    'user_id': member.user_id,
+                    'role': 'teacher'
+                },
+                status=status.HTTP_200_OK
+            )
+
+        if member.user_id == clase.teacher_id and new_role != 'teacher':
+            return Response(
+                {'Error': 'No puedes cambiar el rol del profesor principal sin transferir el cargo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        member.role = new_role
+        member.save(update_fields=['role'])
+        return Response(
+            {
+                'message': 'Rol actualizado correctamente',
+                'user_id': member.user_id,
+                'role': new_role
+            },
             status=status.HTTP_200_OK
         )
 
@@ -1595,8 +2098,8 @@ class GradeTaskSubmissionView(APIView):
         except ClaseMembership.DoesNotExist:
             return Response({'Error': 'El usuario no pertenece a esta clase'}, status=status.HTTP_404_NOT_FOUND)
 
-        if student_membership.role == 'teacher':
-            return Response({'Error': 'No se puede calificar al profesor'}, status=status.HTTP_400_BAD_REQUEST)
+        if student_membership.role in ('teacher', 'assistant'):
+            return Response({'Error': 'No se puede calificar a un miembro del profesorado'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             submission = TaskSubmission.objects.get(task=task, student_id=student_id)

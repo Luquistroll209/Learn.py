@@ -71,7 +71,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
                 user=obj.created_by,
                 clase=obj.clase
             )
-            return membership.role == 'teacher'
+            return membership.role in ('teacher', 'assistant')
         except ClaseMembership.DoesNotExist:
             return False
 
@@ -99,7 +99,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         if obj.clase.teacher_id == user.id:
             return True
         membership = ClaseMembership.objects.filter(user=user, clase=obj.clase).first()
-        return bool(membership and membership.role == 'teacher')
+        return bool(membership and membership.role in ('teacher', 'assistant'))
 
     def get_can_edit(self, obj):
         return self._can_manage(obj)
@@ -147,7 +147,7 @@ class AnnouncementCommentSerializer(serializers.ModelSerializer):
         if clase.teacher_id == user.id:
             return True
         membership = ClaseMembership.objects.filter(user=user, clase=clase).first()
-        return bool(membership and membership.role == 'teacher')
+        return bool(membership and membership.role in ('teacher', 'assistant'))
 
     def get_can_edit(self, obj):
         user = self.context.get('user')
@@ -338,6 +338,6 @@ class TaskSerializer(serializers.ModelSerializer):
                 user=obj.created_by,
                 clase=obj.clase
             )
-            return membership.role == 'teacher'
+            return membership.role in ('teacher', 'assistant')
         except ClaseMembership.DoesNotExist:
             return False
