@@ -31,6 +31,12 @@
         title: string;
         description: string;
         due_at: string | null;
+        allow_any_file_type: boolean;
+        allowed_extensions: string[];
+        max_files: number;
+        max_file_size_mb: number;
+        photos: string[];
+        urls: string[];
         status: 'activa' | 'cerrada';
         delivered_count: number;
         pending_count: number;
@@ -91,8 +97,10 @@
 
     let showInviteModal = false;
     let showCreateTaskModal = false;
+    let showEditTaskModal = false;
     let inviteEmail = '';
     let isSubmittingTask = false;
+    let isUpdatingTask = false;
     let selectedTaskId = '';
     let selectedTaskDetail: TaskDetail | null = null;
     let gradingValues: Record<number, string> = {};
@@ -103,6 +111,20 @@
     let classSettingsBannerFile: File | null = null;
     let removeCurrentBanner = false;
     let isSavingClassSettings = false;
+    let taskUrlsText = '';
+    let taskImages: File[] = [];
+
+    let editingTaskId: number | null = null;
+    let editTaskTitle = '';
+    let editTaskDescription = '';
+    let editTaskDueDate = '';
+    let editTaskAllowAnyFileType = true;
+    let editTaskAllowedExtensions = '';
+    let editTaskMaxFiles = 1;
+    let editTaskMaxFileSizeMb = 100;
+    let editTaskUrlsText = '';
+    let editTaskExistingPhotos: string[] = [];
+    let editTaskNewImages: File[] = [];
 
     let newTask = {
         title: '',
@@ -147,6 +169,40 @@
         const date = new Date(`${dateValue}T23:59:59`);
         if (Number.isNaN(date.getTime())) return dateValue;
         return date.toISOString();
+    }
+
+    function parseUrls(raw: string): string[] {
+        return raw
+            .split(/\n|,/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    function parseAllowedExtensions(raw: string): string[] {
+        return raw
+            .split(/[,\n]/)
+            .map((item) => item.trim().replace('.', '').toLowerCase())
+            .filter(Boolean);
+    }
+
+    function formatDateInput(dateValue: string | null | undefined): string {
+        if (!dateValue) return '';
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toISOString().slice(0, 10);
+    }
+
+    function toBool(value: unknown): boolean {
+        if (typeof value === 'boolean') return value;
+        return String(value).toLowerCase() === 'true';
+    }
+
+    function getTaskImageSource(photoPath: string): string {
+        if (!photoPath) return '';
+        if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+            return photoPath;
+        }
+        return `${urlMedia}${photoPath.replace(/^\/+/, '')}`;
     }
 
     function parseTaskStatus(status: string): string {
@@ -259,8 +315,12 @@
         const gradeMap: Record<number, string> = {};
         const feedbackMap: Record<number, string> = {};
         for (const delivered of data.task?.delivered_students || []) {
-            gradeMap[delivered.id] = delivered.grade || '';
-            feedbackMap[delivered.id] = delivered.feedback || '';
+            gradeMap[delivered.id] = delivered.grade !== null && delivered.grade !== undefined
+                ? String(delivered.grade)
+                : '';
+            feedbackMap[delivered.id] = delivered.feedback !== null && delivered.feedback !== undefined
+                ? String(delivered.feedback)
+                : '';
         }
         gradingValues = gradeMap;
         feedbackValues = feedbackMap;
@@ -306,20 +366,27 @@
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const extensionsArray = newTask.allowedExtensions
-            .split(/[,\n]/)
-            .map((item) => item.trim().replace('.', '').toLowerCase())
-            .filter(Boolean);
+        const allowAny = toBool(newTask.allowAnyFileType);
+        const extensionsArray = parseAllowedExtensions(newTask.allowedExtensions);
+        if (!allowAny && extensionsArray.length === 0) {
+            showAlert('Error', 'Añade al menos una extensión permitida', 'orange');
+            return;
+        }
+        const urlsArray = parseUrls(taskUrlsText);
 
         const formData = new FormData();
         formData.append('title', newTask.title.trim());
         formData.append('description', newTask.description.trim());
-        formData.append('allow_any_file_type', String(newTask.allowAnyFileType));
+        formData.append('allow_any_file_type', String(allowAny));
         formData.append('allowed_extensions', JSON.stringify(extensionsArray));
         formData.append('max_files', String(newTask.maxFiles || 1));
         formData.append('max_file_size_mb', String(newTask.maxFileSizeMb || 100));
+        formData.append('urls', JSON.stringify(urlsArray));
         if (newTask.dueDate) {
             formData.append('due_at', toBackendDate(newTask.dueDate));
+        }
+        for (const image of taskImages) {
+            formData.append('photos[]', image);
         }
 
         isSubmittingTask = true;
@@ -349,6 +416,8 @@
                 maxFiles: 1,
                 maxFileSizeMb: 100
             };
+            taskUrlsText = '';
+            taskImages = [];
             activeTab = 'tareas';
             await loadDashboard(false);
         } catch (error) {
@@ -358,14 +427,149 @@
         }
     }
 
+    function handleTaskImages(event: Event) {
+        const input = event.currentTarget as HTMLInputElement;
+        const files = input.files ? Array.from(input.files) : [];
+        taskImages = files;
+    }
+
+    function removeTaskImage(index: number) {
+        taskImages = taskImages.filter((_, idx) => idx !== index);
+    }
+
+    function openEditTask(task: TaskRow) {
+        editingTaskId = Number(task.id);
+        editTaskTitle = task.title || '';
+        editTaskDescription = task.description || '';
+        editTaskDueDate = formatDateInput(task.due_at);
+        editTaskAllowAnyFileType = Boolean(task.allow_any_file_type);
+        editTaskAllowedExtensions = Array.isArray(task.allowed_extensions) ? task.allowed_extensions.join(', ') : '';
+        editTaskMaxFiles = Number(task.max_files || 1);
+        editTaskMaxFileSizeMb = Number(task.max_file_size_mb || 100);
+        editTaskUrlsText = Array.isArray(task.urls) ? task.urls.join('\n') : '';
+        editTaskExistingPhotos = Array.isArray(task.photos) ? [...task.photos] : [];
+        editTaskNewImages = [];
+        showEditTaskModal = true;
+    }
+
+    function handleEditTaskImages(event: Event) {
+        const input = event.currentTarget as HTMLInputElement;
+        const files = input.files ? Array.from(input.files) : [];
+        editTaskNewImages = files;
+    }
+
+    function removeEditTaskExistingPhoto(index: number) {
+        editTaskExistingPhotos = editTaskExistingPhotos.filter((_, idx) => idx !== index);
+    }
+
+    function removeEditTaskNewImage(index: number) {
+        editTaskNewImages = editTaskNewImages.filter((_, idx) => idx !== index);
+    }
+
+    async function saveEditedTask() {
+        if (!editingTaskId) return;
+        if (!editTaskTitle.trim() || !editTaskDescription.trim()) {
+            showAlert('Error', 'Título y descripción son obligatorios', 'orange');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const allowAny = toBool(editTaskAllowAnyFileType);
+        const extensionsArray = parseAllowedExtensions(editTaskAllowedExtensions);
+        if (!allowAny && extensionsArray.length === 0) {
+            showAlert('Error', 'Añade al menos una extensión permitida', 'orange');
+            return;
+        }
+        const urlsArray = parseUrls(editTaskUrlsText);
+
+        const formData = new FormData();
+        formData.append('title', editTaskTitle.trim());
+        formData.append('description', editTaskDescription.trim());
+        formData.append('allow_any_file_type', String(allowAny));
+        formData.append('allowed_extensions', JSON.stringify(extensionsArray));
+        formData.append('max_files', String(editTaskMaxFiles || 1));
+        formData.append('max_file_size_mb', String(editTaskMaxFileSizeMb || 100));
+        formData.append('urls', JSON.stringify(urlsArray));
+        formData.append('photos', JSON.stringify(editTaskExistingPhotos));
+        if (editTaskDueDate) {
+            formData.append('due_at', toBackendDate(editTaskDueDate));
+        } else {
+            formData.append('due_at', '');
+        }
+        for (const image of editTaskNewImages) {
+            formData.append('photos[]', image);
+        }
+
+        isUpdatingTask = true;
+        try {
+            const response = await fetch(`${urlip}class/manageTask/${editingTaskId}/`, {
+                method: 'PATCH',
+                headers: {
+                    authorization: token
+                },
+                body: formData
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                showAlert('Error', data?.Error || 'No se pudo actualizar la tarea', 'red');
+                return;
+            }
+
+            showAlert('Listo', 'Tarea actualizada', 'green');
+            showEditTaskModal = false;
+            editingTaskId = null;
+            await loadDashboard(true);
+        } catch (error) {
+            showAlert('Error', 'Error de conexión al editar tarea', 'red');
+        } finally {
+            isUpdatingTask = false;
+        }
+    }
+
+    async function deleteTask(taskId: number) {
+        if (!confirm('¿Seguro que quieres eliminar esta tarea? También se borrarán sus entregas.')) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${urlip}class/manageTask/${taskId}/`, {
+                method: 'DELETE',
+                headers: {
+                    authorization: token
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                showAlert('Error', data?.Error || 'No se pudo eliminar la tarea', 'red');
+                return;
+            }
+
+            showAlert('Listo', 'Tarea eliminada', 'green');
+            await loadDashboard(false);
+        } catch (error) {
+            showAlert('Error', 'Error de conexión al eliminar tarea', 'red');
+        }
+    }
+
     async function guardarCalificacion(studentId: number) {
         if (!selectedTaskId) return;
 
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const rawGrade = (gradingValues[studentId] || '').trim();
-        const rawFeedback = (feedbackValues[studentId] || '').trim();
+        const rawGrade = String(gradingValues[studentId] ?? '').replace(',', '.').trim();
+        const rawFeedback = String(feedbackValues[studentId] ?? '').trim();
+
+        if (rawGrade !== '') {
+            const gradeValue = Number(rawGrade);
+            if (Number.isNaN(gradeValue) || gradeValue < 0 || gradeValue > 10) {
+                showAlert('Error', 'La nota debe estar entre 0 y 10', 'orange');
+                return;
+            }
+        }
+
         const payload: Record<string, unknown> = {
             student_id: studentId,
             feedback: rawFeedback
@@ -494,6 +698,29 @@
                     <textarea id="taskDescription" rows="4" bind:value={newTask.description} required></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="taskUrls">Enlaces de apoyo</label>
+                    <textarea
+                        id="taskUrls"
+                        rows="3"
+                        bind:value={taskUrlsText}
+                        placeholder="Pega enlaces separados por coma o una URL por línea"
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="taskImages">Fotos / material visual</label>
+                    <input id="taskImages" type="file" accept="image/*" multiple on:change={handleTaskImages} />
+                    {#if taskImages.length > 0}
+                        <div class="files" style="margin-top: 8px;">
+                            {#each taskImages as file, idx (file.name + file.lastModified)}
+                                <div class="file task-file-row">
+                                    <span>{file.name}</span>
+                                    <button type="button" class="secondary-button tiny-btn" on:click={() => removeTaskImage(idx)}>Quitar</button>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+                <div class="form-group">
                     <label for="taskDueDate">Fecha límite</label>
                     <input id="taskDueDate" type="date" bind:value={newTask.dueDate} />
                 </div>
@@ -504,7 +731,7 @@
                         <option value={false}>Restringir por extensión</option>
                     </select>
                 </div>
-                {#if !newTask.allowAnyFileType}
+                {#if !toBool(newTask.allowAnyFileType)}
                     <div class="form-group">
                         <label for="taskExtensions">Extensiones permitidas</label>
                         <input id="taskExtensions" type="text" bind:value={newTask.allowedExtensions} placeholder="pdf, docx, zip, py" />
@@ -522,6 +749,102 @@
                     <button type="button" class="cancel-btn" on:click={() => showCreateTaskModal = false}>Cancelar</button>
                     <button type="submit" class="send-btn" disabled={isSubmittingTask}>
                         {isSubmittingTask ? 'Creando...' : 'Crear tarea'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
+{#if showEditTaskModal}
+    <div class="modal-overlay" on:click={() => showEditTaskModal = false}>
+        <div class="modal-card" on:click|stopPropagation>
+            <button class="modal-close" on:click={() => showEditTaskModal = false} aria-label="Cerrar">×</button>
+            <div class="form-header">
+                <h2>Editar tarea</h2>
+                <p>Actualiza contenido, archivos y configuración de entrega</p>
+            </div>
+
+            <form on:submit|preventDefault={saveEditedTask}>
+                <div class="form-group">
+                    <label for="editTaskTitle">Título</label>
+                    <input id="editTaskTitle" type="text" bind:value={editTaskTitle} required />
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Descripción</label>
+                    <textarea id="editTaskDescription" rows="4" bind:value={editTaskDescription} required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskUrls">Enlaces</label>
+                    <textarea
+                        id="editTaskUrls"
+                        rows="3"
+                        bind:value={editTaskUrlsText}
+                        placeholder="Una URL por línea o separadas por coma"
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDueDate">Fecha límite</label>
+                    <input id="editTaskDueDate" type="date" bind:value={editTaskDueDate} />
+                </div>
+                <div class="form-group">
+                    <label for="editTaskAllowAny">Tipos de archivo</label>
+                    <select id="editTaskAllowAny" bind:value={editTaskAllowAnyFileType}>
+                        <option value={true}>Permitir cualquier tipo</option>
+                        <option value={false}>Restringir por extensión</option>
+                    </select>
+                </div>
+                {#if !toBool(editTaskAllowAnyFileType)}
+                    <div class="form-group">
+                        <label for="editTaskExtensions">Extensiones permitidas</label>
+                        <input id="editTaskExtensions" type="text" bind:value={editTaskAllowedExtensions} placeholder="pdf, docx, zip, py" />
+                    </div>
+                {/if}
+                <div class="form-group">
+                    <label for="editTaskMaxFiles">Máximo archivos por entrega</label>
+                    <input id="editTaskMaxFiles" type="number" min="1" max="50" bind:value={editTaskMaxFiles} />
+                </div>
+                <div class="form-group">
+                    <label for="editTaskMaxSize">Tamaño máximo por archivo (MB)</label>
+                    <input id="editTaskMaxSize" type="number" min="1" max="1024" bind:value={editTaskMaxFileSizeMb} />
+                </div>
+                <div class="form-group">
+                    <label>Fotos actuales</label>
+                    {#if editTaskExistingPhotos.length === 0}
+                        <div class="task-due">No hay fotos guardadas.</div>
+                    {:else}
+                        <div class="task-photos-grid">
+                            {#each editTaskExistingPhotos as photo, idx (photo)}
+                                <div class="task-photo-box">
+                                    <img src={getTaskImageSource(photo)} alt="foto tarea" />
+                                    <button type="button" class="secondary-button tiny-btn" on:click={() => removeEditTaskExistingPhoto(idx)}>
+                                        Quitar
+                                    </button>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+                <div class="form-group">
+                    <label for="editTaskImages">Añadir más fotos</label>
+                    <input id="editTaskImages" type="file" accept="image/*" multiple on:change={handleEditTaskImages} />
+                    {#if editTaskNewImages.length > 0}
+                        <div class="files" style="margin-top: 8px;">
+                            {#each editTaskNewImages as file, idx (file.name + file.lastModified)}
+                                <div class="file task-file-row">
+                                    <span>{file.name}</span>
+                                    <button type="button" class="secondary-button tiny-btn" on:click={() => removeEditTaskNewImage(idx)}>
+                                        Quitar
+                                    </button>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" on:click={() => showEditTaskModal = false}>Cancelar</button>
+                    <button type="submit" class="send-btn" disabled={isUpdatingTask}>
+                        {isUpdatingTask ? 'Guardando...' : 'Guardar cambios'}
                     </button>
                 </div>
             </form>
@@ -619,6 +942,14 @@
                                 <span class="task-due">Entregadas: {task.delivered_count}/{task.total_students}</span>
                                 <span class="task-due">Por calificar: {task.to_grade_count}</span>
                                 <span class="task-due">Promedio: {task.average_grade || '-'}</span>
+                                <span class="task-due">Enlaces: {task.urls?.length || 0}</span>
+                                <span class="task-due">Fotos: {task.photos?.length || 0}</span>
+                                <button class="secondary-button tiny-btn" on:click={() => openEditTask(task)}>
+                                    Editar
+                                </button>
+                                <button class="secondary-button tiny-btn danger-soft" on:click={() => deleteTask(task.id)}>
+                                    Eliminar
+                                </button>
                             </div>
                         </div>
                     {/each}
@@ -852,6 +1183,45 @@
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+    }
+
+    .tiny-btn {
+        padding: 6px 10px;
+        font-size: 0.82rem;
+        border-radius: 8px;
+    }
+
+    .danger-soft {
+        border-color: #f2b8b5;
+        color: #b42318;
+        background: #fff5f5;
+    }
+
+    .task-file-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .task-photos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .task-photo-box {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .task-photo-box img {
+        width: 100%;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
     }
 
     .dashboard-shell {
