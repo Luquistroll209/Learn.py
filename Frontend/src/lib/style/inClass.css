@@ -6,7 +6,8 @@
     --background: #ffffff;
     --background-hover: #f1f3f4;
     --border-color: #dadce0;
-    --shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --shadow:
+        0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
     --shadow-heavy: 0 4px 12px rgba(0, 0, 0, 0.15);
     --success-color: #34a853;
     --warning-color: #fbbc05;
@@ -17,7 +18,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 body {
@@ -97,7 +98,6 @@ body {
     box-shadow: var(--shadow-heavy);
     position: relative;
     overflow: hidden;
-    
 }
 
 .portada-wrap {
@@ -116,7 +116,7 @@ body {
 }
 
 .class-header::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
@@ -276,7 +276,9 @@ body {
     color: var(--text-color);
     font-size: 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
 .form-group input:focus,
@@ -363,7 +365,11 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -658,7 +664,11 @@ body {
 }
 
 .average-card {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     color: white;
     padding: 24px;
     border-radius: 12px;
@@ -870,7 +880,7 @@ body {
     .class-content {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar {
         order: 2;
     }
@@ -892,23 +902,24 @@ body {
         padding-right: 10px;
         padding-bottom: 10px;
     }
-    
+
     .class-header {
         padding: 24px 20px;
     }
-    
+
     .class-header h1 {
         font-size: 24px;
     }
-    
-    .main-content, .card {
+
+    .main-content,
+    .card {
         padding: 16px;
     }
-    
+
     .class-tabs {
         padding: 0 10px;
     }
-    
+
     .tab-button {
         padding: 14px 16px;
         font-size: 14px;
@@ -1008,4 +1019,29 @@ body {
     .modal-overlay {
         padding: 8px;
     }
+}
+.manage-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.forum-sort-select {
+    min-width: 150px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 8px 10px;
+    background: #fff;
+}
+
+.manage-btn {
+    border-radius: 999px;
+    padding: 8px 12px;
+}
+
+.danger-btn {
+    border-color: #f2b8b5;
+    color: #b42318;
+    background: #fff5f5;
 }

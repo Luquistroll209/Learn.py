@@ -46,8 +46,6 @@ ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp", "bmp"]
 MAX_IMAGE_SIZE = 10 * 1024 * 1024
 
 
-# Application definition
-
 INSTALLED_APPS = [
     # manejo de APIs y tokens
     "rest_framework",
@@ -154,9 +152,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
-    ]
+    ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/minute",
+        "user": "20/minute",
+    },
 }
-
 
 # settings.py - Gmail SMTP
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

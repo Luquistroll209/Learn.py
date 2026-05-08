@@ -6,7 +6,8 @@
     --background: #ffffff;
     --background-hover: #f1f3f4;
     --border-color: #dadce0;
-    --shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --shadow:
+        0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
     --shadow-heavy: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -14,7 +15,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 body {
@@ -36,7 +37,7 @@ body {
     top: 0;
     z-index: 1000;
     border-radius: 16px;
-    margin: -10px 0px 20px ;
+    margin: -10px 0px 20px;
 }
 
 /* Brand Section */
@@ -48,21 +49,22 @@ body {
 }
 
 .logo {
-    height: 45px;
+    height: 27px;
     padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+
     color: white;
     border-radius: 10px;
     font-weight: 700;
     font-size: 18px;
-    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
     white-space: nowrap;
     text-decoration: none;
 }
-.logo img{height: 110%;}
+.logo img {
+    height: 110%;
+}
 
 .Github {
     width: 36px;
@@ -114,7 +116,7 @@ body {
 }
 
 .nav-link.active::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -192,7 +194,11 @@ body {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -733,9 +739,15 @@ body {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .notifications-menu {
@@ -864,18 +876,121 @@ body {
     color: var(--text-light);
     font-size: 14px;
 }
-.RedactButton{
+.RedactButton {
     margin: 10px 40px 10px 30px;
     border: 1px solid grey;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     color: white;
     border-radius: 20px;
     padding: 10px;
     transition: 0.5s;
     text-align: center;
 }
-.RedactButton:hover{
-    background: linear-gradient(0deg, var(--primary-color), var(--primary-dark));
+.RedactButton:hover {
+    background: linear-gradient(
+        0deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     scale: 110%;
+}
+/* Rate Limit Popup */
+.rate-limit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
 
+.rate-limit-popup {
+    background: white;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.3s ease;
+    overflow: hidden;
+}
+
+.rate-limit-header {
+    background: #dc2626;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.rate-limit-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.rate-limit-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.rate-limit-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.rate-limit-content {
+    padding: 24px 20px;
+    text-align: center;
+}
+
+.rate-limit-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.rate-limit-message {
+    font-size: 1rem;
+    color: #1f2937;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.rate-limit-wait {
+    background: #fee2e2;
+    padding: 12px;
+    border-radius: 12px;
+    color: #b91c1c;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

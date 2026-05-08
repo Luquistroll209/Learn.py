@@ -7,7 +7,8 @@
     --background: #ffffff;
     --background-hover: #f1f3f4;
     --border-color: #dadce0;
-    --shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+    --shadow:
+        0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
     --shadow-heavy: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -18,7 +19,9 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+        sans-serif;
     background: #f5f7fa;
 }
 
@@ -392,7 +395,11 @@ body {
 
 .redact-send-btn {
     padding: 12px 28px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--primary-dark)
+    );
     color: white;
     border: none;
     border-radius: 20px;
@@ -435,7 +442,7 @@ body {
         max-width: 800px;
         gap: 24px;
     }
-    
+
     .redact-noticontainer {
         max-height: 500px;
     }
@@ -445,29 +452,29 @@ body {
     .redact-page-container {
         padding: 16px;
     }
-    
+
     .redact-containerAll {
         gap: 20px;
     }
-    
+
     .redact-compose-window {
         width: 90%;
         height: 70vh;
     }
-    
+
     .redact-notifications-header {
         padding: 20px;
     }
-    
+
     .redact-notifications-header h2 {
         font-size: 24px;
     }
-    
+
     .redact-tabs button {
         padding: 14px 20px;
         font-size: 14px;
     }
-    
+
     .redact-notification-item {
         padding: 16px;
         margin: 6px 4px 6px 0;
@@ -475,17 +482,17 @@ body {
     .redact-notification-detail {
         padding: 24px 20px;
     }
-    
+
     .redact-detail-title-row {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .redact-detail-title {
         font-size: 20px;
     }
-    
+
     .redact-info-grid {
         grid-template-columns: 1fr;
     }
@@ -495,42 +502,42 @@ body {
     .redact-notification-detail {
         padding: 20px 16px;
     }
-    
+
     .redact-detail-title {
         font-size: 18px;
     }
-    
+
     .redact-user-card {
         flex-direction: column;
         text-align: center;
         gap: 16px;
     }
-    
+
     .redact-user-info {
         text-align: center;
     }
     .redact-containerAll {
         gap: 16px;
     }
-    
+
     .redact-compose-window {
         width: 95%;
         height: 80vh;
         border-radius: 16px;
     }
-    
+
     .redact-notification-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
     }
-    
+
     .redact-sender-name,
     .redact-notification-time {
         width: 100%;
         max-width: none;
     }
-    
+
     .redact-notification-time {
         align-self: flex-start;
     }
@@ -554,7 +561,6 @@ body {
     flex: 1;
     overflow-y: auto;
 }
-
 
 .redact-detail-header {
     margin-bottom: 32px;
@@ -603,7 +609,6 @@ body {
     font-size: 14px;
 }
 
-
 .redact-detail-section {
     margin-bottom: 32px;
 }
@@ -614,7 +619,6 @@ body {
     font-size: 16px;
     font-weight: 600;
 }
-
 
 .redact-user-card {
     background: var(--primary-light);
@@ -662,7 +666,6 @@ body {
     word-break: break-all;
 }
 
-
 .redact-message-container {
     background: #f8f9fa;
     padding: 24px;
@@ -678,7 +681,6 @@ body {
     white-space: pre-wrap;
     margin: 0;
 }
-
 
 .redact-info-grid {
     display: grid;
@@ -703,3 +705,68 @@ body {
     font-weight: 600;
 }
 
+/* Invitation card */
+.redact-invitation-card {
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 1.25rem;
+    padding: 1.75rem 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.redact-invitation-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+}
+
+.redact-invitation-text {
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.redact-invitation-professor {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.redact-invitation-class-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.redact-invitation-id {
+    font-size: 0.75rem;
+    color: #475569;
+    font-family: monospace;
+    margin-bottom: 1.25rem;
+}
+
+/* Botón azul estilo consistente */
+.redact-invitation-button {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    padding: 0.7rem 1.8rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.redact-invitation-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
