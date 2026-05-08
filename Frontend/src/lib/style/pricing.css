@@ -1,0 +1,440 @@
+:root {
+    --primary: #1a73e8;
+    --secondary: #f9ab00;
+    --primary-dark: #0d47a1;
+    --gray: #5f6368;
+    --gray-light: #f8f9fa;
+    --border: #dadce0;
+}
+
+.discount-banner {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe6cc 100%);
+    border: 1px solid #ffd699;
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: #b45f06;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.discount-banner i {
+    font-size: 1.2rem;
+    color: #e67e22;
+    flex-shrink: 0;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin: 2.5rem 0 3rem;
+    align-items: start;
+}
+
+.pricing-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem 1.6rem;
+    position: relative;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
+    border-color: var(--primary);
+}
+
+.pricing-card.destacado {
+    border: 2px solid var(--primary);
+    box-shadow: 0 8px 24px rgba(26, 115, 232, 0.14);
+    padding-top: 2.4rem;
+}
+
+.popular-label {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 30px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.discount-badge {
+    position: absolute;
+    top: -11px;
+    right: 18px;
+    background: #e63946;
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.22rem 0.8rem;
+    border-radius: 30px;
+    box-shadow: 0 2px 6px rgba(230, 57, 70, 0.3);
+    z-index: 1;
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: 1.4rem;
+}
+
+.plan-icon {
+    width: 56px;
+    height: 56px;
+    background: #e8f0fe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.9rem;
+    font-size: 1.6rem;
+    color: var(--primary);
+    transition: background 0.2s ease;
+}
+
+.pricing-card:hover .plan-icon,
+.pricing-card.destacado .plan-icon {
+    background: #d2e3fc;
+}
+
+.plan-nombre {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #202124;
+    margin: 0;
+}
+
+.plan-precio {
+    text-align: center;
+    margin-bottom: 1.6rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.precio {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.precio-descuento {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #e63946;
+}
+
+.precio-original {
+    font-size: 1.1rem;
+    color: var(--gray);
+    text-decoration: line-through;
+    margin-right: 0.2rem;
+}
+
+.periodo {
+    font-size: 0.88rem;
+    color: var(--gray);
+    align-self: flex-end;
+    padding-bottom: 0.2rem;
+}
+
+.caracteristicas {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    flex-grow: 1;
+}
+
+.caracteristicas li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: #3c4043;
+    line-height: 1.4;
+}
+
+.caracteristicas li i {
+    color: var(--primary);
+    font-size: 0.95rem;
+    width: 16px;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.card-cta {
+    margin-top: auto;
+}
+
+.btn-plan {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.plan-nota {
+    font-size: 0.72rem;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.comparativa-section {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #202124;
+    margin: 0 0 0.25rem;
+}
+
+.section-header p {
+    font-size: 0.88rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+.compare-header-labels {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    padding: 0 0 0.75rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 0.25rem;
+    min-width: 560px;
+}
+
+.compare-feature-spacer {
+    display: block;
+}
+
+.compare-plan-labels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.compare-label-destacado {
+    color: var(--primary) !important;
+}
+
+.feature-compare {
+    min-width: 560px;
+}
+
+.compare-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+}
+
+.compare-row:last-child {
+    border-bottom: none;
+}
+
+.compare-feature {
+    font-weight: 500;
+    font-size: 0.88rem;
+    color: #202124;
+}
+
+.compare-values {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #3c4043;
+}
+
+.compare-values .fa-check {
+    color: var(--primary);
+}
+
+.compare-values .fa-times {
+    color: #bcc0c4;
+}
+
+.faq-preview {
+    margin: 3rem 0;
+}
+
+.faq-preview h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #202124;
+    margin: 0 0 1.5rem;
+}
+
+.faq-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.faq-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+}
+
+.faq-item strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #202124;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.faq-item p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin: 0;
+    line-height: 1.55;
+}
+
+.cta-section {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+    border-radius: 20px;
+    margin: 2rem 0 3rem;
+    border: 1px solid #c5d8fc;
+}
+
+.cta-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #202124;
+    margin: 0 0 0.75rem;
+}
+
+.cta-description {
+    font-size: 0.95rem;
+    color: var(--gray);
+    max-width: 480px;
+    margin: 0 auto 1.75rem;
+    line-height: 1.6;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 1100px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .pricing-card.destacado {
+        order: -1;
+    }
+
+    .discount-banner {
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+        text-align: left;
+    }
+
+    .cta-section {
+        padding: 2rem 1.25rem;
+        border-radius: 16px;
+    }
+
+    .cta-title {
+        font-size: 1.2rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cta-buttons .btn {
+        text-align: center;
+        justify-content: center;
+    }
+
+    .comparativa-section {
+        padding: 1.25rem;
+    }
+
+    .faq-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .precio,
+    .precio-descuento {
+        font-size: 1.75rem;
+    }
+}

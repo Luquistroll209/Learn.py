@@ -202,7 +202,7 @@
             <a href="/auth?type=register" class="btn btn-primary btn-large">
                 <i class="fas fa-rocket"></i> Comenzar Gratis
             </a>
-            <a href="/pricing" class="btn btn-secondary">
+            <a href="/planes" class="btn btn-secondary">
                 Ver Planes y Precios
             </a>
         </div>
