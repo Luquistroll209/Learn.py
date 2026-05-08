@@ -39,7 +39,7 @@ ALLOWED_HOSTS = ["lt209.ddns.net", "127.0.0.1", "localhost"]
 CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net"]
 CORS_ALLOW_HEADERS = list(default_headers) + ["content-type", "authorization", "*"]
 
-MEDIA_URL = "/api/media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp", "bmp"]
 # Tamaño de las imagenes de portada
