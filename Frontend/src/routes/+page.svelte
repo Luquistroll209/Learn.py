@@ -10,7 +10,6 @@
 </svelte:head>
 
 <section class="welcome-container">
-    <!-- Hero Section Mejorada -->
     <div class="hero-section">
         <h1 class="welcome-title">
             Transforma la Educación con
@@ -41,27 +40,6 @@
         </div>
     </div>
 
-    <!-- Llamada a la acción inmediata -->
-    <div class="quick-cta">
-        <h3>¿Eres profesor o estudiante?</h3>
-        <p>Comienza ahora sin complicaciones</p>
-        <div class="cta-buttons">
-            <a href="/auth?type=register&role=teacher" class="btn btn-primary">
-                <i class="fas fa-chalkboard-teacher"></i> Soy Profesor
-            </a>
-            <a
-                href="/auth?type=register&role=student"
-                class="btn btn-secondary"
-            >
-                <i class="fas fa-graduation-cap"></i> Soy Estudiante
-            </a>
-            <a href="/demo" class="btn btn-outline">
-                <i class="fas fa-play-circle"></i> Ver Demo Gratis
-            </a>
-        </div>
-    </div>
-
-    <!-- Características Principales Mejoradas -->
     <div class="section-header">
         <h2>Todo lo que necesitas en un solo lugar</h2>
         <p>Diseñado pensando en la experiencia real del aula</p>
@@ -142,7 +120,6 @@
         </div>
     </div>
 
-    <!-- Testimonios -->
     <div class="testimonials-section">
         <h2>Lo que dicen nuestros usuarios</h2>
         <div class="testimonials">
@@ -179,7 +156,6 @@
         </div>
     </div>
 
-    <!-- CTA Principal -->
     <div class="cta-section cta-premium">
         <h3 class="cta-title">
             ¿Listo para revolucionar tu experiencia educativa?
@@ -199,7 +175,7 @@
         </div>
 
         <div class="cta-buttons">
-            <a href="/auth?type=register" class="btn btn-primary btn-large">
+            <a href="/auth/register" class="btn btn-primary btn-large">
                 <i class="fas fa-rocket"></i> Comenzar Gratis
             </a>
             <a href="/planes" class="btn btn-secondary">
@@ -211,7 +187,6 @@
         </p>
     </div>
 
-    <!-- Preguntas Frecuentes Rápidas -->
     <div class="faq-preview">
         <h3>Preguntas Frecuentes</h3>
         <div class="faq-items">
@@ -240,7 +215,6 @@
         <a href="/faq" class="btn btn-outline">Ver todas las preguntas</a>
     </div>
 
-    <!-- Tecnología + Contacto -->
     <div class="tech-contact-section">
         <div class="tech-stack">
             <h4 class="tech-title">Construido con tecnología moderna</h4>
@@ -267,7 +241,7 @@
         <div class="contact-promo">
             <h4>¿Tienes preguntas específicas?</h4>
             <p>Nuestro equipo está aquí para ayudarte</p>
-            <a href="/contact" class="btn btn-outline"
+            <a href="/soporte" class="btn btn-outline"
                 ><i class="fas fa-envelope"></i> Contactar Soporte</a
             >
         </div>
