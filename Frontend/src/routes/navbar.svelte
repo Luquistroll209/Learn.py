@@ -291,6 +291,15 @@
                 on:click={handleNavLinkClick}>Soporte</a
             >
         </li>
+        <li class="nav-item">
+            <a
+                href="/planes"
+                class="nav-link {currentPath.startsWith('/soporte')
+                    ? 'active'
+                    : ''}"
+                on:click={handleNavLinkClick}>Planes</a
+            >
+        </li>
         {#if !islogged}
             <div class="auth-buttons mobile-auth">
                 <a href="/auth/login" class="auth-btn btn-login"
@@ -419,15 +428,6 @@
                     >
                 </div>
             {/if}
-        {:else if isSmallscreen == false}
-            <div class="auth-buttons desktop-only">
-                <a href="/auth/login" class="auth-btn btn-login"
-                    >Iniciar Sesión</a
-                >
-                <a href="/auth/register" class="auth-btn btn-register"
-                    >Registrarse</a
-                >
-            </div>
         {/if}
 
         <button

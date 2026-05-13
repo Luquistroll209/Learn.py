@@ -32,7 +32,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = ["https://lt209.ddns.net"]
 # IPs
-IP = "127.0.0.1:8000"
+IP = "lt209.ddns.net:8000"
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ["lt209.ddns.net", "127.0.0.1", "localhost"]
 # CORS_ALLOWED_ORIGINS = ["http://lt209.ddns.net:2000"]
