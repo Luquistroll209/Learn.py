@@ -169,5 +169,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "luquistroll@gmail.com"
-EMAIL_HOST_PASSWORD = "nkvt slwo nogk tgba"
+EMAIL_HOST_PASSWORD = "eldr ktox ejnk qgxa"
 DEFAULT_FROM_EMAIL = "luquistroll@gmail.com"

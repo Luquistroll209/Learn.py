@@ -54,9 +54,6 @@
                 Invita estudiantes, comparte materiales y gestiona todo desde un
                 panel intuitivo.
             </p>
-            <a href="/features#classes" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
 
         <div class="feature-card">
@@ -66,9 +63,6 @@
                 Asigna ejercicios con fechas límite, recibe entregas, califica
                 automáticamente y proporciona retroalimentación personalizada.
             </p>
-            <a href="/features#assignments" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
 
         <div class="feature-card">
@@ -78,9 +72,6 @@
                 Monitorea el progreso de cada estudiante, genera reportes
                 automáticos y detecta oportunidades de mejora inmediatamente.
             </p>
-            <a href="/features#analytics" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
 
         <div class="feature-card">
@@ -90,9 +81,6 @@
                 Chatea con estudiantes, comparte archivos, envía anuncios y
                 recibe notificaciones instantáneas. Todo en tiempo real.
             </p>
-            <a href="/features#communication" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
 
         <div class="feature-card">
@@ -102,9 +90,6 @@
                 Funciona perfectamente en computadoras, tablets y móviles.
                 Accede a tus clases desde cualquier lugar, en cualquier momento.
             </p>
-            <a href="/features#mobile" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
 
         <div class="feature-card">
@@ -114,9 +99,6 @@
                 Interfaz tan simple que no necesitas capacitación. Enfócate en
                 enseñar, nosotros nos encargamos de la tecnología.
             </p>
-            <a href="/features#easy" class="feature-link"
-                >Ver más <i class="fas fa-arrow-right"></i></a
-            >
         </div>
     </div>
 
@@ -212,7 +194,6 @@
                 </p>
             </div>
         </div>
-        <a href="/faq" class="btn btn-outline">Ver todas las preguntas</a>
     </div>
 
     <div class="tech-contact-section">
