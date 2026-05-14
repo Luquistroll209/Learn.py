@@ -1042,27 +1042,43 @@ class inviteUser(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            join_url = settings.IP + f"/api/class/join/{clase.id}/"
-            mensaje_invitacion = f"""
-            ¡Has sido invitado a unirte a la clase "{clase.name}"!
+            # URL para unirse a la clase (frontend)
+            frontend_url = "http://lt209.ddns.net:8000"  # Cambia por tu URL base
+            invitation_link = f"{frontend_url}/clases/join-{clase.id}"
 
-            ID de la clase: {clase.id}
+            # URL API (para respaldo)
+            api_link = settings.IP + f"/api/class/join/{clase.id}/"
 
-            Profesor: {user.get_full_name() or user.email}
+            # Mensaje mejorado
+            mensaje = f"""
+¡Has sido invitado a unirte a la clase "{clase.name}"!
 
-            Para unirte a la clase, haz clic en el siguiente enlace:
-            {join_url}
+Detalles de la clase:
+• ID: {clase.id}
+• Profesor: {user.get_full_name() or user.email}
+• Descripción: {clase.description}
 
-            Descripción: {clase.description}
+Haz clic en el botón para unirte automáticamente a la clase.
             """
 
             asunto = f"Invitación a la clase: {clase.name}"
+
+            # Contexto adicional para el email
+            extra_context = {
+                "class_id": clase.id,
+                "class_name": clase.name,
+                "teacher_name": user.get_full_name() or user.email,
+                "invitation_link": invitation_link,
+                "api_link": api_link,  # Enlace de respaldo
+            }
+
             notificacion_data = enviarMensaje(
                 asunto=asunto,
-                mensaje=mensaje_invitacion,
+                mensaje=mensaje,
                 destinario=user_to_invite,
                 email=email,
                 user=user,
+                extra_context=extra_context,
             )
 
             return Response(
@@ -1070,6 +1086,7 @@ class inviteUser(APIView):
                     "message": f"Invitación enviada a {email}",
                     "notificacion": notificacion_data,
                     "class_id": clase.id,
+                    "invitation_link": invitation_link,
                 },
                 status=status.HTTP_200_OK,
             )

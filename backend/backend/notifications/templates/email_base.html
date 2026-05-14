@@ -1,180 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email de Mi App</title>
-    <style>
-        /* Estilos base */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            margin: 0;
-            padding: 0;
-            
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Cabecera mejorada */
-        .header {
-            background: linear-gradient(135deg, #3db5ff 0%, #1a73e8 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        
-        .header p {
-            margin: 10px 0 0;
-            opacity: 0.9;
-            font-size: 16px;
-        }
-        
-        /* Contenido mejorado */
-        .content {
-            padding: 30px;
-        }
-        
-        .content h3 {
-            color: #1a73e8;
-            margin-top: 0;
-            font-size: 22px;
-            font-weight: 600;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 10px;
-        }
-        
-        .message {
-            font-size: 16px;
-            line-height: 1.7;
-            color: #444444;
-        }
-        
-        .greeting {
-            background: #f0f7ff;
-            border-left: 4px solid #3db5ff;
-            padding: 15px;
-            margin-top: 25px;
-            border-radius: 0 8px 8px 0;
-        }
-        
-        .greeting p {
-            margin: 0;
-            font-weight: 500;
-            color: #1a73e8;
-        }
-        
-        /* Pie de página mejorado */
-        .footer {
-            background: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #666666;
-            border-top: 1px solid #eaeaea;
-        }
-        
-        .footer p {
-            margin: 5px 0;
-        }
-        
-        .social-links {
-            margin: 15px 0;
-        }
-        
-        .social-links a {
-            display: inline-block;
-            margin: 0 10px;
-            color: #1a73e8;
-            text-decoration: none;
-        }
-        
-        .social-links a:hover {
-            text-decoration: underline;
-        }
-        
-        .company-info {
-            font-size: 12px;
-            color: #888888;
-            margin-top: 15px;
-        }
-        
-        /* Elementos decorativos */
-        .header::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 10px solid #1a73e8;
-        }
-        
-        /* Responsive */
-        @media (max-width: 600px) {
-            .container {
-                margin: 10px;
-                border-radius: 8px;
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Learn.py - {{ subject }}</title>
+        <style>
+            /* Estilos base */
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333333;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f7fa;
             }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .header {
-                padding: 25px 15px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Learn.py</h1>
 
-        </div>
-        
-        <div class="content">
-            <h3>{{ asunto }}</h3>
-            <div class="message">{{ mensaje|linebreaks }}</div>
-            
-            {% if nombre %}
-            <div class="greeting">
-                <p><strong>Saludos, {{ nombre }}!</strong></p>
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Cabecera */
+            .header {
+                background: linear-gradient(135deg, #3db5ff 0%, #1a73e8 100%);
+                color: white;
+                padding: 30px 20px;
+                text-align: center;
+                position: relative;
+            }
+
+            .header h1 {
+                margin: 0;
+                font-size: 28px;
+                font-weight: 600;
+            }
+
+            .header p {
+                margin: 10px 0 0;
+                opacity: 0.9;
+                font-size: 16px;
+            }
+
+            /* Contenido */
+            .content {
+                padding: 30px;
+            }
+
+            .content h2 {
+                color: #1a73e8;
+                margin-top: 0;
+                font-size: 24px;
+                font-weight: 600;
+                border-bottom: 2px solid #eaeaea;
+                padding-bottom: 10px;
+            }
+
+            .message {
+                font-size: 16px;
+                line-height: 1.7;
+                color: #444444;
+                margin-bottom: 25px;
+            }
+
+            .details-box {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+                border: 1px solid #e0e0e0;
+            }
+
+            .details-box p {
+                margin: 10px 0;
+            }
+
+            .details-box strong {
+                color: #1a73e8;
+            }
+
+            .class-id {
+                background: #e8f0fe;
+                font-family: monospace;
+                font-size: 18px;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 6px;
+                text-align: center;
+                letter-spacing: 2px;
+            }
+
+            /* Botón principal */
+            .button-container {
+                text-align: center;
+                margin: 30px 0;
+            }
+
+            .button {
+                display: inline-block;
+                background: linear-gradient(135deg, #3db5ff 0%, #1a73e8 100%);
+                color: white !important;
+                text-decoration: none;
+                padding: 14px 32px;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+            }
+
+            .button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+            }
+
+            .button-small {
+                display: inline-block;
+                background: #1a73e8;
+                color: white !important;
+                text-decoration: none;
+                padding: 10px 24px;
+                border-radius: 6px;
+                font-weight: 500;
+                font-size: 14px;
+            }
+
+            /* Info adicional */
+            .info-text {
+                background: #fff3e0;
+                border-left: 4px solid #ff9800;
+                padding: 15px;
+                margin: 20px 0;
+                font-size: 14px;
+                color: #666;
+            }
+
+            .greeting {
+                background: #f0f7ff;
+                border-left: 4px solid #3db5ff;
+                padding: 15px;
+                margin-top: 25px;
+                border-radius: 0 8px 8px 0;
+            }
+
+            .greeting p {
+                margin: 0;
+                font-weight: 500;
+                color: #1a73e8;
+            }
+
+            /* Pie de página */
+            .footer {
+                background: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                font-size: 14px;
+                color: #666666;
+                border-top: 1px solid #eaeaea;
+            }
+
+            .footer p {
+                margin: 5px 0;
+            }
+
+            .social-links {
+                margin: 15px 0;
+            }
+
+            .social-links a {
+                display: inline-block;
+                margin: 0 10px;
+                color: #1a73e8;
+                text-decoration: none;
+            }
+
+            .company-info {
+                font-size: 12px;
+                color: #888888;
+                margin-top: 15px;
+            }
+
+            /* Responsive */
+            @media (max-width: 600px) {
+                .container {
+                    margin: 10px;
+                    border-radius: 8px;
+                }
+
+                .content {
+                    padding: 20px;
+                }
+
+                .header {
+                    padding: 25px 15px;
+                }
+
+                .button {
+                    padding: 12px 24px;
+                    font-size: 14px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Learn.py</h1>
+                <p>Aprendizaje colaborativo</p>
             </div>
-            {% endif %}
-        </div>
-        
-        <div class="footer">
-            <p>Este email fue enviado automáticamente</p>
-            
-            <div class="social-links">
-                <a href="lr209.ddns.net:2000">Sitio Web</a>
+
+            <div class="content">
+                <h2>{{ subject }}</h2>
+
+                <div class="message">{{ message|linebreaks }}</div>
+
+                {% if class_id %}
+                <div class="details-box">
+                    <p><strong>Información de la clase:</strong></p>
+                    <p><strong>Clase:</strong> {{ class_name }}</p>
+                    <p><strong>Profesor:</strong> {{ teacher_name }}</p>
+                    <div class="class-id">ID: {{ class_id }}</div>
+                </div>
+                {% endif %} {% if invitation_link %}
+                <div class="button-container">
+                    <a href="{{ invitation_link }}" class="button">
+                        Unirme a la clase
+                    </a>
+                </div>
+
+                <div class="info-text">
+                    <strong>¿No funciona el botón?</strong><br />
+                    Copia y pega este enlace en tu navegador:<br />
+                    <a
+                        href="{{ invitation_link }}"
+                        style="color: #1a73e8; word-break: break-all"
+                    >
+                        {{ invitation_link }}
+                    </a>
+                </div>
+                {% endif %} {% if button_link and button_text %}
+                <div class="button-container">
+                    <a href="{{ button_link }}" class="button-small">
+                        {{ button_text }}
+                    </a>
+                </div>
+                {% endif %} {% if extra_info %}
+                <div class="greeting">
+                    <p><strong>{{ extra_info }}</strong></p>
+                </div>
+                {% endif %} {% if not invitation_link and not button_link %}
+                <div class="greeting">
+                    <p><strong>¡Gracias por usar Learn.py!</strong></p>
+                </div>
+                {% endif %}
             </div>
-            
-            <div class="company-info">
-                <p>learn.py &copy; 2025-2026. Todos los derechos reservados.</p>
-                <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:luquistroll@gmail.com">luquistroll@gmail.com</a></p>
+
+            <div class="footer">
+                <p>Este email fue enviado automáticamente</p>
+
+                <div class="social-links">
+                    <a href="http://lt209.ddns.net:8000">Sitio Web</a>
+                </div>
+
+                <div class="company-info">
+                    <p>
+                        Learn.py &copy; 2025-2026. Todos los derechos
+                        reservados.
+                    </p>
+                    <p>
+                        Si tienes alguna pregunta, contáctanos en
+                        <a href="mailto:luquistroll@gmail.com"
+                            >luquistroll@gmail.com</a
+                        >
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>
