@@ -1032,132 +1032,148 @@
 {/if}
 
 {#if showCreateTask}
-    <div class="modal-overlay" on:click={() => (showCreateTask = false)}>
-        <div class="modal-card" on:click|stopPropagation>
+    <div
+        class="modal-overlay task-create-overlay"
+        on:click={() => (showCreateTask = false)}
+    >
+        <div class="modal-card task-create-card" on:click|stopPropagation>
             <button
                 class="modal-close"
                 on:click={() => (showCreateTask = false)}
                 aria-label="Cerrar">×</button
             >
-            <div class="form-header">
-                <h2>Nueva tarea</h2>
-                <p>Crea una tarea real en el backend</p>
-            </div>
-
-            <form on:submit|preventDefault={createTask}>
-                <div class="form-group">
-                    <label for="taskTitle">Título</label>
-                    <input
-                        id="taskTitle"
-                        placeholder="Introduce el título"
-                        type="text"
-                        bind:value={taskTitle}
-                        required
-                    />
+            <div class="task-create-header">
+                <div>
+                    <span class="task-create-kicker">Nueva tarea</span>
+                    <h2>Prepara la entrega</h2>
+                    <p>
+                        Define lo que verá el alumnado y ajusta las reglas de
+                        entrega.
+                    </p>
                 </div>
-
-                <div class="form-group">
+                <div class="task-create-date">
                     <label for="taskDue">Fecha límite</label>
                     <input id="taskDue" type="date" bind:value={taskDueDate} />
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="taskDesc">Descripción</label>
-                    <textarea
-                        id="taskDesc"
-                        rows="4"
-                        placeholder="Describe la tarea..."
-                        bind:value={taskDescription}
-                    ></textarea>
-                </div>
+            <form class="task-create-form" on:submit|preventDefault={createTask}>
+                <div class="task-create-grid">
+                    <section class="task-create-main" aria-label="Contenido de la tarea">
+                        <label class="task-title-field" for="taskTitle">
+                            <span>Título</span>
+                            <input
+                                id="taskTitle"
+                                placeholder="Ej. Proyecto final de Python"
+                                type="text"
+                                bind:value={taskTitle}
+                                required
+                            />
+                        </label>
 
-                <div class="form-group">
-                    <label for="taskUrls">URLs (opcional)</label>
-                    <textarea
-                        id="taskUrls"
-                        rows="3"
-                        placeholder="Una por línea o separadas por coma"
-                        bind:value={taskUrls}
-                    ></textarea>
-                </div>
+                        <label class="task-description-field" for="taskDesc">
+                            <span>Descripción</span>
+                            <textarea
+                                id="taskDesc"
+                                rows="8"
+                                placeholder="Explica el objetivo, los pasos y qué debe entregar el alumnado..."
+                                bind:value={taskDescription}
+                            ></textarea>
+                        </label>
 
-                <div class="form-group">
-                    <label for="taskImages">Imágenes</label>
-                    <div class="image-upload-area">
-                        <input
-                            id="taskImages"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            on:change={handleTaskFiles}
-                        />
-                        <div class="upload-placeholder">
-                            <div class="upload-icon">Subir imagen</div>
-                            <div class="upload-text">
-                                Arrastra imágenes o haz clic para seleccionar
+                        <label class="task-links-field" for="taskUrls">
+                            <span>Recursos</span>
+                            <textarea
+                                id="taskUrls"
+                                rows="4"
+                                placeholder="Pega enlaces, uno por línea o separados por coma"
+                                bind:value={taskUrls}
+                            ></textarea>
+                        </label>
+                    </section>
+
+                    <aside class="task-create-settings" aria-label="Ajustes de entrega">
+                        <div class="task-settings-block">
+                            <div class="task-settings-title">Entrega</div>
+
+                            <label class="task-compact-field" for="taskAllowAnyType">
+                                <span>Archivos aceptados</span>
+                                <select
+                                    id="taskAllowAnyType"
+                                    bind:value={taskAllowAnyFileType}
+                                >
+                                    <option value={true}>Cualquier tipo</option>
+                                    <option value={false}>Solo extensiones concretas</option>
+                                </select>
+                            </label>
+
+                            {#if !taskAllowAnyFileType}
+                                <label
+                                    class="task-compact-field"
+                                    for="taskAllowedExtensions"
+                                >
+                                    <span>Extensiones</span>
+                                    <input
+                                        id="taskAllowedExtensions"
+                                        placeholder="pdf, docx, zip, py"
+                                        type="text"
+                                        bind:value={taskAllowedExtensions}
+                                    />
+                                </label>
+                            {/if}
+
+                            <div class="task-number-row">
+                                <label class="task-compact-field" for="taskMaxFiles">
+                                    <span>Máx. archivos</span>
+                                    <input
+                                        id="taskMaxFiles"
+                                        type="number"
+                                        min="1"
+                                        max="50"
+                                        bind:value={taskMaxFiles}
+                                    />
+                                </label>
+
+                                <label class="task-compact-field" for="taskMaxSize">
+                                    <span>MB por archivo</span>
+                                    <input
+                                        id="taskMaxSize"
+                                        type="number"
+                                        min="1"
+                                        max="1024"
+                                        bind:value={taskMaxFileSizeMb}
+                                    />
+                                </label>
                             </div>
                         </div>
-                    </div>
-                    {#if taskImages.length > 0}
-                        <div class="files">
-                            {#each taskImages as file}
-                                <div class="file">{file.name}</div>
-                            {/each}
+
+                        <div class="task-settings-block">
+                            <div class="task-settings-title">Material visual</div>
+                            <div class="task-image-drop">
+                                <input
+                                    id="taskImages"
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    on:change={handleTaskFiles}
+                                />
+                                <label for="taskImages">
+                                    <strong>Subir imágenes</strong>
+                                    <span>Arrastra o selecciona archivos</span>
+                                </label>
+                            </div>
+                            {#if taskImages.length > 0}
+                                <div class="files task-create-files">
+                                    {#each taskImages as file}
+                                        <div class="file">{file.name}</div>
+                                    {/each}
+                                </div>
+                            {/if}
                         </div>
-                    {/if}
+                    </aside>
                 </div>
 
-                <div class="form-group">
-                    <label for="taskAllowAnyType">Tipos de archivo</label>
-                    <select
-                        id="taskAllowAnyType"
-                        bind:value={taskAllowAnyFileType}
-                    >
-                        <option value={true}>Permitir cualquier tipo</option>
-                        <option value={false}>Restringir por extensión</option>
-                    </select>
-                </div>
-
-                {#if !taskAllowAnyFileType}
-                    <div class="form-group">
-                        <label for="taskAllowedExtensions"
-                            >Extensiones permitidas</label
-                        >
-                        <input
-                            id="taskAllowedExtensions"
-                            placeholder="pdf, docx, zip, py"
-                            type="text"
-                            bind:value={taskAllowedExtensions}
-                        />
-                    </div>
-                {/if}
-
-                <div class="form-group">
-                    <label for="taskMaxFiles">Máximo archivos por entrega</label
-                    >
-                    <input
-                        id="taskMaxFiles"
-                        type="number"
-                        min="1"
-                        max="50"
-                        bind:value={taskMaxFiles}
-                    />
-                </div>
-
-                <div class="form-group">
-                    <label for="taskMaxSize"
-                        >Tamaño máximo por archivo (MB)</label
-                    >
-                    <input
-                        id="taskMaxSize"
-                        type="number"
-                        min="1"
-                        max="1024"
-                        bind:value={taskMaxFileSizeMb}
-                    />
-                </div>
-
-                <div class="form-actions">
+                <div class="task-create-actions">
                     <button
                         type="button"
                         class="cancel-btn"
