@@ -55,20 +55,17 @@
     }
 
     function processInvitationMessage(message: string) {
-        // Detectar si contiene "invitado a unirte a la clase"
-        const invitationPattern = /invitado a unirte a la clase "([^"]+)"/i;
+        const invitationPattern = /invitad[oa] a unirte a la clase "([^"]+)"/i;
         const matchInvitation = message.match(invitationPattern);
         if (matchInvitation) {
             isInvitation = true;
             className = matchInvitation[1];
 
-            // Extraer ID de clase
-            const idPattern = /ID de la clase:\s*([A-Za-z0-9]+)/;
+            const idPattern = /ID:\s*([A-Za-z0-9]+)/i;
             const idMatch = message.match(idPattern);
             if (idMatch) classId = idMatch[1];
 
-            // Extraer nombre del profesor: después de "Profesor:" hasta fin de línea
-            const profPattern = /Profesor:\s*(.+?)(?:\n|$)/;
+            const profPattern = /Profesor:\s*(.+?)(?:\n|$)/i;
             const profMatch = message.match(profPattern);
             if (profMatch) professorName = profMatch[1].trim();
         }
