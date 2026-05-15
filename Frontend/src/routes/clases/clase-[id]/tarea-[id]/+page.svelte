@@ -307,10 +307,34 @@
             isLate: false,
         };
     };
-    const normalizeAssetUrl = (path: string) =>
-        path.startsWith("http")
-            ? path
-            : `${urlMedia}${path.replace(/^\//, "")}`;
+    function normalizeAssetUrl(path: string): string {
+        const value = String(path || "");
+        const apiBase = urlip.replace(/\/+$/, "");
+
+        if (!value) return value;
+        if (value.startsWith(`${apiBase}/media/`)) return value;
+        if (value.startsWith("/api/media/")) {
+            return `${apiBase.replace(/\/api$/, "")}${value}`;
+        }
+        if (value.startsWith("/media/")) return `${apiBase}${value}`;
+        if (value.startsWith("media/")) return `${apiBase}/${value}`;
+
+        try {
+            const assetUrl = new URL(value);
+            const apiUrl = new URL(apiBase);
+            if (
+                assetUrl.origin === apiUrl.origin &&
+                assetUrl.pathname.startsWith("/media/")
+            ) {
+                return `${apiBase}${assetUrl.pathname}${assetUrl.search}${assetUrl.hash}`;
+            }
+        } catch {
+            if (value.startsWith("http")) return value;
+            return `${urlMedia.replace(/\/+$/, "")}/${value.replace(/^\/+/, "")}`;
+        }
+
+        return value;
+    }
     const acceptAttr = () =>
         task && !task.allow_any_file_type
             ? task.allowed_extensions

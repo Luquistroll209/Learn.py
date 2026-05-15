@@ -163,20 +163,44 @@
         averageGrade = (total / grades.length).toFixed(2);
     }
 
-    function getClassImageSource(): string {
+    function getClassImageSource(clase: any): string {
         if (!clase?.imagen_url) return imgDefault;
-        if (String(clase.imagen_url).startsWith("http"))
+        if (
+            String(clase.imagen_url).startsWith("http://") ||
+            String(clase.imagen_url).startsWith("https://")
+        ) {
             return clase.imagen_url;
+        }
         return `${urlMedia.replace(/\/+$/, "")}/${String(clase.imagen_url).replace(/^\/+/, "")}`;
     }
 
-    function normalizeAssetUrl(path: string): string {
-        if (!path) return "";
-        if (path.startsWith("http://") || path.startsWith("https://"))
-            return path;
-        return `${urlMedia.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
-    }
+    function getAnnouncementPhotoSource(photo: string): string {
+        const value = String(photo || "");
+        const apiBase = urlip.replace(/\/+$/, "");
 
+        if (!value) return value;
+        if (value.startsWith(`${apiBase}/media/`)) return value;
+        if (value.startsWith("/api/media/")) {
+            return `${apiBase.replace(/\/api$/, "")}${value}`;
+        }
+        if (value.startsWith("/media/")) return `${apiBase}${value}`;
+        if (value.startsWith("media/")) return `${apiBase}/${value}`;
+
+        try {
+            const photoUrl = new URL(value);
+            const apiUrl = new URL(apiBase);
+            if (
+                photoUrl.origin === apiUrl.origin &&
+                photoUrl.pathname.startsWith("/media/")
+            ) {
+                return `${apiBase}${photoUrl.pathname}${photoUrl.search}${photoUrl.hash}`;
+            }
+        } catch {
+            return value;
+        }
+
+        return value;
+    }
     function hydrateClassMembers() {
         students = [];
         teachers = [];
@@ -262,6 +286,7 @@
                 "red",
             );
         }
+        console.log(announcements);
     }
 
     function handleNewsFiles(event: Event) {
@@ -916,8 +941,8 @@
                     ¿Estás seguro de que quieres asignar el rol de <strong
                         >Profesor</strong
                     >
-                    a este usuario? Esto te hará perder la propiedad de la clase
-                    y tu rol pasará a ser <strong>Asistente</strong>.
+                    a este usuario? Esto te hará perder la propiedad de la clase y
+                    tu rol pasará a ser <strong>Asistente</strong>.
                 </p>
             </div>
             <div class="form-actions" style="margin-top: 20px;">
@@ -1334,7 +1359,11 @@
 <div class="class-container">
     <div class="class-header">
         <div class="portada-wrap">
-            <img src={getClassImageSource()} alt="" class="portada-image" />
+            <img
+                src={getClassImageSource(clase)}
+                alt=""
+                class="portada-image"
+            />
         </div>
         <div class="class-header-content">
             <h1>{clase.name}</h1>
@@ -1463,7 +1492,9 @@
                                 <div class="announcement-photos">
                                     {#each announcement.photos as photo}
                                         <img
-                                            src={normalizeAssetUrl(photo)}
+                                            src={getAnnouncementPhotoSource(
+                                                photo,
+                                            )}
                                             alt="foto anuncio"
                                         />
                                     {/each}

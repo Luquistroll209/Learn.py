@@ -60,6 +60,34 @@
         return date.getTime();
     }
 
+    function getAnnouncementPhotoSource(photo: string): string {
+        const value = String(photo || "");
+        const apiBase = urlip.replace(/\/+$/, "");
+
+        if (!value) return value;
+        if (value.startsWith(`${apiBase}/media/`)) return value;
+        if (value.startsWith("/api/media/")) {
+            return `${apiBase.replace(/\/api$/, "")}${value}`;
+        }
+        if (value.startsWith("/media/")) return `${apiBase}${value}`;
+        if (value.startsWith("media/")) return `${apiBase}/${value}`;
+
+        try {
+            const photoUrl = new URL(value);
+            const apiUrl = new URL(apiBase);
+            if (
+                photoUrl.origin === apiUrl.origin &&
+                photoUrl.pathname.startsWith("/media/")
+            ) {
+                return `${apiBase}${photoUrl.pathname}${photoUrl.search}${photoUrl.hash}`;
+            }
+        } catch {
+            return value;
+        }
+
+        return value;
+    }
+
     function buildThreadComments(rawComments: any[], sortMode: string): any[] {
         if (!Array.isArray(rawComments) || rawComments.length === 0) return [];
 
@@ -339,7 +367,10 @@
                         <div class="task-section-title">Adjuntos</div>
                         <div class="announcement-photos">
                             {#each announcement.photos as photo (photo)}
-                                <img src={photo} alt="foto anuncio" />
+                                <img
+                                    src={getAnnouncementPhotoSource(photo)}
+                                    alt="foto anuncio"
+                                />
                             {/each}
                         </div>
                     {/if}

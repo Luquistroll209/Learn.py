@@ -152,11 +152,15 @@
         isLoading = false;
     });
 
-    function getClassImageSource(): string {
-        if (!classData?.imagen_url) return imgDefault;
-        if (String(classData.imagen_url).startsWith("http"))
-            return classData.imagen_url;
-        return `${urlMedia.replace(/\/+$/, "")}/${String(classData.imagen_url).replace(/^\/+/, "")}`;
+    function getClassImageSource(clase: any): string {
+        if (!clase?.imagen_url) return imgDefault;
+        if (
+            String(clase.imagen_url).startsWith("http://") ||
+            String(clase.imagen_url).startsWith("https://")
+        ) {
+            return clase.imagen_url;
+        }
+        return `${urlMedia.replace(/\/+$/, "")}/${String(clase.imagen_url).replace(/^\/+/, "")}`;
     }
 
     function formatDate(dateValue: string | null | undefined): string {
@@ -1182,10 +1186,14 @@
     </div>
 {/if}
 
-<div class="class-container dashboard-shell">
+<div class="class-container">
     <div class="class-header">
         <div class="portada-wrap">
-            <img src={getClassImageSource()} alt="" class="portada-image" />
+            <img
+                src={getClassImageSource(classData)}
+                alt=""
+                class="portada-image"
+            />
         </div>
         <div class="class-header-content dashboard-identity">
             <div class="dashboard-badge">Panel de profesorado</div>
