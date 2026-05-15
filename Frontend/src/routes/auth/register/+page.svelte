@@ -57,11 +57,18 @@
             const data = await response.json();
 
             if (response.ok) {
-                showAlert("Exito", "Cuenta creada correctamente", "blue");
-                // Redirigir al login después de crear la cuenta
+                const userInfo = {
+                    name,
+                    last_name: lastName,
+                };
+                localStorage.setItem("token", data.token || "");
+                localStorage.setItem("userData", JSON.stringify(userInfo));
+                localStorage.setItem("islogged", "true");
+
+                showAlert("Éxito", "Cuenta creada correctamente", "blue");
                 setTimeout(() => {
-                    window.location.href = "/auth/login";
-                }, 1500);
+                    window.location.href = "/clases/";
+                }, 1000);
             } else {
                 // Extraer mensajes de error del backend
                 let errorMessage = "No se pudo crear la cuenta";

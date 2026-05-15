@@ -7,12 +7,43 @@
     import { fetchWithRateLimit } from "$lib/utils/fetchWithRateLimit";
     import { goto } from "$app/navigation";
 
+    type CalendarTask = {
+        id: number;
+        title: string;
+        description?: string;
+        clase_id: string;
+        class_name: string;
+        role: "student" | "teacher" | "assistant";
+        due_at: string | null;
+        delivered_at: string | null;
+        priority: "high" | "medium" | "low" | "overdue";
+        status: "pending" | "completed";
+        is_overdue?: boolean;
+    };
+
+    type CalendarDay = {
+        key: string;
+        date: Date;
+        day: number;
+        isCurrentMonth: boolean;
+        isToday: boolean;
+        tasks: CalendarTask[];
+    };
+
     let clases: any[] = [];
     let desplegado: number | null = null;
     let isLoading = true;
+    let showCalendar = false;
+    let isCalendarLoading = false;
+    let calendarTasks: CalendarTask[] = [];
 
     // Fecha actual para el dashboard
     const currentDate = new Date();
+    let calendarDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1,
+    );
     const dayNames = [
         "Domingo",
         "Lunes",
@@ -45,6 +76,26 @@
 
     let recentActivity: any[] = [];
     let upcomingTasks: any[] = [];
+    $: calendarDays = buildCalendarDays(calendarDate, calendarTasks);
+    $: calendarMonthLabel = calendarDate.toLocaleDateString("es-ES", {
+        month: "long",
+        year: "numeric",
+    });
+    $: visibleCalendarTasks = calendarTasks
+        .filter((task) => {
+            const date = task.due_at || task.delivered_at;
+            if (!date) return false;
+            const taskDate = new Date(date);
+            return (
+                taskDate.getFullYear() === calendarDate.getFullYear() &&
+                taskDate.getMonth() === calendarDate.getMonth()
+            );
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.due_at || a.delivered_at || 0).getTime() -
+                new Date(b.due_at || b.delivered_at || 0).getTime(),
+        );
 
     // Estadísticas
     let totalClases = 0;
@@ -79,8 +130,90 @@
         }
     }
 
-    function abrirCalendario() {
-        alert("Abriendo calendario");
+    async function abrirCalendario() {
+        showCalendar = true;
+        await loadCalendarTasks();
+    }
+
+    function cerrarCalendario() {
+        showCalendar = false;
+    }
+
+    function changeCalendarMonth(offset: number) {
+        calendarDate = new Date(
+            calendarDate.getFullYear(),
+            calendarDate.getMonth() + offset,
+            1,
+        );
+    }
+
+    function goToCurrentMonth() {
+        calendarDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1,
+        );
+    }
+
+    function getTaskDateKey(task: CalendarTask): string {
+        return getDateKey(task.due_at || task.delivered_at);
+    }
+
+    function getDateKey(value: string | Date | null | undefined): string {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        const year = date.getFullYear();
+        const month = `${date.getMonth() + 1}`.padStart(2, "0");
+        const day = `${date.getDate()}`.padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    function buildCalendarDays(
+        monthDate: Date,
+        tasks: CalendarTask[],
+    ): CalendarDay[] {
+        const year = monthDate.getFullYear();
+        const month = monthDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const startOffset = (firstDay.getDay() + 6) % 7;
+        const gridStart = new Date(year, month, 1 - startOffset);
+        const todayKey = getDateKey(currentDate);
+        const days: CalendarDay[] = [];
+
+        for (let index = 0; index < 42; index += 1) {
+            const date = new Date(
+                gridStart.getFullYear(),
+                gridStart.getMonth(),
+                gridStart.getDate() + index,
+            );
+            const key = getDateKey(date);
+            days.push({
+                key,
+                date,
+                day: date.getDate(),
+                isCurrentMonth: date.getMonth() === month,
+                isToday: key === todayKey,
+                tasks: tasks.filter((task) => getTaskDateKey(task) === key),
+            });
+        }
+
+        return days;
+    }
+
+    function formatCalendarTaskTime(value: string | null): string {
+        if (!value) return "Sin hora";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
+
+    function openCalendarTask(task: CalendarTask) {
+        if (!browser) return;
+        window.location.href = `/clases/clase-${task.clase_id}/tarea-${task.id}`;
     }
 
     function verDetallesClase(id: string | number) {
@@ -98,6 +231,44 @@
             return clase.imagen_url;
         }
         return `${urlMedia.replace(/\/+$/, "")}/${String(clase.imagen_url).replace(/^\/+/, "")}`;
+    }
+
+    async function loadCalendarTasks() {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        isCalendarLoading = true;
+        try {
+            const response = await fetchWithRateLimit(
+                `${urlip}class/obtainUserTasks/`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        authorization: token,
+                    },
+                },
+            );
+            const data = await response.json();
+            if (!response.ok) {
+                calendarTasks = [];
+                return;
+            }
+
+            calendarTasks = [
+                ...(Array.isArray(data.pending_tasks)
+                    ? data.pending_tasks
+                    : []),
+                ...(Array.isArray(data.completed_tasks)
+                    ? data.completed_tasks
+                    : []),
+            ].filter((task) => task.due_at || task.delivered_at);
+        } catch (error) {
+            calendarTasks = [];
+        } finally {
+            isCalendarLoading = false;
+        }
     }
 
     // Función original para cargar clases
@@ -453,3 +624,114 @@
         </div>
     {/if}
 </div>
+
+{#if showCalendar}
+    <div class="calendar-overlay" on:click={cerrarCalendario}>
+        <section class="calendar-panel" on:click|stopPropagation>
+            <button
+                class="calendar-close"
+                on:click={cerrarCalendario}
+                aria-label="Cerrar calendario"
+            >
+                ×
+            </button>
+
+            <div class="calendar-panel-header">
+                <div>
+                    <span>Calendario</span>
+                    <h2>{calendarMonthLabel}</h2>
+                </div>
+                <div class="calendar-controls">
+                    <button
+                        on:click={() => changeCalendarMonth(-1)}
+                        aria-label="Mes anterior"
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="calendar-today-btn" on:click={goToCurrentMonth}>
+                        Hoy
+                    </button>
+                    <button
+                        on:click={() => changeCalendarMonth(1)}
+                        aria-label="Mes siguiente"
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {#if isCalendarLoading}
+                <div class="calendar-loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Cargando tareas...
+                </div>
+            {:else}
+                <div class="calendar-weekdays">
+                    <span>Lun</span>
+                    <span>Mar</span>
+                    <span>Mié</span>
+                    <span>Jue</span>
+                    <span>Vie</span>
+                    <span>Sáb</span>
+                    <span>Dom</span>
+                </div>
+
+                <div class="calendar-grid">
+                    {#each calendarDays as day}
+                        <div
+                            class:muted={!day.isCurrentMonth}
+                            class:today={day.isToday}
+                            class="calendar-cell"
+                        >
+                            <div class="calendar-cell-number">{day.day}</div>
+                            <div class="calendar-cell-tasks">
+                                {#each day.tasks.slice(0, 3) as task}
+                                    <button
+                                        class="calendar-task {task.status} {task.priority}"
+                                        on:click={() => openCalendarTask(task)}
+                                        title={task.title}
+                                    >
+                                        <span>{task.title}</span>
+                                    </button>
+                                {/each}
+                                {#if day.tasks.length > 3}
+                                    <div class="calendar-more">
+                                        +{day.tasks.length - 3} más
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+
+                <aside class="calendar-agenda">
+                    <div class="calendar-agenda-title">
+                        Tareas de {calendarMonthLabel}
+                    </div>
+                    {#if visibleCalendarTasks.length === 0}
+                        <div class="calendar-empty">
+                            No hay tareas con fecha este mes.
+                        </div>
+                    {:else}
+                        {#each visibleCalendarTasks as task}
+                            <button
+                                class="calendar-agenda-item {task.status}"
+                                on:click={() => openCalendarTask(task)}
+                            >
+                                <div>
+                                    <strong>{task.title}</strong>
+                                    <span>{task.class_name}</span>
+                                </div>
+                                <small>
+                                    {formatCalendarTaskTime(
+                                        task.due_at || task.delivered_at,
+                                    )}
+                                </small>
+                            </button>
+                        {/each}
+                    {/if}
+                </aside>
+            {/if}
+        </section>
+    </div>
+{/if}
