@@ -23,6 +23,8 @@
     let showInviteModal = false;
     let showCreateNews = false;
     let showCreateTask = false;
+    let showClassCalendar = false;
+    let classCalendarDate = new Date();
 
     let areYouTeacher = false;
     let isClassOwner = false;
@@ -81,6 +83,33 @@
     let transferSelectElement: HTMLSelectElement | null = null;
     let transferPreviousValue = "";
 
+    $: classCalendarMonth = new Date(
+        classCalendarDate.getFullYear(),
+        classCalendarDate.getMonth(),
+        1,
+    );
+    $: classCalendarLabel = classCalendarMonth.toLocaleDateString("es-ES", {
+        month: "long",
+        year: "numeric",
+    });
+    $: classCalendarTasks = tasks.filter((task) => task.due_at);
+    $: classCalendarDays = buildClassCalendarDays(
+        classCalendarMonth,
+        classCalendarTasks,
+    );
+    $: classCalendarAgenda = classCalendarTasks
+        .filter((task) => {
+            const date = new Date(task.due_at);
+            return (
+                date.getFullYear() === classCalendarMonth.getFullYear() &&
+                date.getMonth() === classCalendarMonth.getMonth()
+            );
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.due_at).getTime() - new Date(b.due_at).getTime(),
+        );
+
     onMount(async () => {
         if (browser) {
             const token = localStorage.getItem("token");
@@ -118,6 +147,90 @@
         const date = new Date(`${dateValue}T23:59:59`);
         if (Number.isNaN(date.getTime())) return dateValue;
         return date.toISOString();
+    }
+
+    function getDateKey(value: string | Date | null | undefined): string {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return [
+            date.getFullYear(),
+            `${date.getMonth() + 1}`.padStart(2, "0"),
+            `${date.getDate()}`.padStart(2, "0"),
+        ].join("-");
+    }
+
+    function buildClassCalendarDays(monthDate: Date, sourceTasks: any[]) {
+        const firstDay = new Date(
+            monthDate.getFullYear(),
+            monthDate.getMonth(),
+            1,
+        );
+        const startOffset = (firstDay.getDay() + 6) % 7;
+        const gridStart = new Date(
+            firstDay.getFullYear(),
+            firstDay.getMonth(),
+            1 - startOffset,
+        );
+        const todayKey = getDateKey(new Date());
+        const days = [];
+
+        for (let index = 0; index < 42; index += 1) {
+            const date = new Date(
+                gridStart.getFullYear(),
+                gridStart.getMonth(),
+                gridStart.getDate() + index,
+            );
+            const key = getDateKey(date);
+            days.push({
+                key,
+                day: date.getDate(),
+                isCurrentMonth: date.getMonth() === monthDate.getMonth(),
+                isToday: key === todayKey,
+                tasks: sourceTasks.filter(
+                    (task) => getDateKey(task.due_at) === key,
+                ),
+            });
+        }
+
+        return days;
+    }
+
+    async function openClassCalendar() {
+        classCalendarDate = new Date();
+        showClassCalendar = true;
+        await loadTasks();
+    }
+
+    function closeClassCalendar() {
+        showClassCalendar = false;
+    }
+
+    function changeClassCalendarMonth(offset: number) {
+        classCalendarDate = new Date(
+            classCalendarDate.getFullYear(),
+            classCalendarDate.getMonth() + offset,
+            1,
+        );
+    }
+
+    function goToClassCalendarToday() {
+        classCalendarDate = new Date();
+    }
+
+    function openTaskDetail(taskId: string | number) {
+        if (!browser) return;
+        window.location.href = `/clases/clase-${id}/tarea-${taskId}`;
+    }
+
+    function formatTaskTime(value: string | null | undefined): string {
+        if (!value) return "Sin hora";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
     }
 
     function buildTaskStatus(task: any, teacherView: boolean): string {
@@ -1355,6 +1468,116 @@
     </div>
 {/if}
 
+{#if showClassCalendar}
+    <div class="modal-overlay class-calendar-overlay" on:click={closeClassCalendar}>
+        <section class="class-calendar-panel" on:click|stopPropagation>
+            <button
+                class="modal-close"
+                on:click={closeClassCalendar}
+                aria-label="Cerrar calendario">×</button
+            >
+
+            <div class="class-calendar-header">
+                <div>
+                    <span>Calendario de clase</span>
+                    <h2>{classCalendarLabel}</h2>
+                    <p>{clase?.name || "Tareas programadas"}</p>
+                </div>
+                <div class="class-calendar-controls">
+                    <button
+                        type="button"
+                        on:click={() => changeClassCalendarMonth(-1)}
+                        aria-label="Mes anterior"
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button type="button" on:click={goToClassCalendarToday}>
+                        Hoy
+                    </button>
+                    <button
+                        type="button"
+                        on:click={() => changeClassCalendarMonth(1)}
+                        aria-label="Mes siguiente"
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {#if tasksLoading}
+                <div class="class-calendar-loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Cargando tareas...
+                </div>
+            {:else}
+                <div class="class-calendar-weekdays">
+                    <span>Lun</span>
+                    <span>Mar</span>
+                    <span>Mié</span>
+                    <span>Jue</span>
+                    <span>Vie</span>
+                    <span>Sáb</span>
+                    <span>Dom</span>
+                </div>
+
+                <div class="class-calendar-grid">
+                    {#each classCalendarDays as day}
+                        <div
+                            class="class-calendar-cell"
+                            class:muted={!day.isCurrentMonth}
+                            class:today={day.isToday}
+                        >
+                            <div class="class-calendar-number">{day.day}</div>
+                            <div class="class-calendar-tasks">
+                                {#each day.tasks.slice(0, 3) as task}
+                                    <button
+                                        type="button"
+                                        class="class-calendar-task {task.status}"
+                                        on:click={() => openTaskDetail(task.id)}
+                                        title={task.title}
+                                    >
+                                        <span>{task.title}</span>
+                                    </button>
+                                {/each}
+                                {#if day.tasks.length > 3}
+                                    <div class="class-calendar-more">
+                                        +{day.tasks.length - 3} más
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+
+                <div class="class-calendar-agenda">
+                    <div class="class-calendar-agenda-title">
+                        Entregas de {classCalendarLabel}
+                    </div>
+                    {#if classCalendarAgenda.length === 0}
+                        <div class="class-calendar-empty">
+                            No hay tareas con fecha límite este mes.
+                        </div>
+                    {:else}
+                        {#each classCalendarAgenda as task}
+                            <button
+                                type="button"
+                                class="class-calendar-agenda-item {task.status}"
+                                on:click={() => openTaskDetail(task.id)}
+                            >
+                                <div>
+                                    <strong>{task.title}</strong>
+                                    <span>{task.description || "Sin descripción"}</span>
+                                </div>
+                                <small>{formatTaskTime(task.due_at)}</small>
+                            </button>
+                        {/each}
+                    {/if}
+                </div>
+            {/if}
+        </section>
+    </div>
+{/if}
+
 <div class="class-container">
     <div class="class-header">
         <div class="portada-wrap">
@@ -1818,6 +2041,7 @@
                 <button
                     class="secondary-button"
                     style="width: 100%; margin-bottom: 8px;"
+                    on:click={openClassCalendar}
                 >
                     Ver calendario
                 </button>
