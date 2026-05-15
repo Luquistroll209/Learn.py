@@ -191,7 +191,7 @@
             const apiUrl = new URL(apiBase);
             if (
                 photoUrl.origin === apiUrl.origin &&
-                photoUrl.pathname.startsWith("/media/")
+                photoUrl.pathname.startsWith("/api/media/")
             ) {
                 return `${apiBase}${photoUrl.pathname}${photoUrl.search}${photoUrl.hash}`;
             }
