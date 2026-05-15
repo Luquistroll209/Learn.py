@@ -61,7 +61,7 @@
         task: TaskDetail;
     }
 
-    let id = $page.params.id ?? "";
+    $: taskId = getTaskIdFromPath($page.url.pathname);
     let isLoading = true;
     let loadError = "";
     let taskResponse: TaskDetailResponse | null = null;
@@ -102,17 +102,25 @@
         if (!token) return;
         isLoading = true;
         try {
-            const res = await fetch(`${urlip}class/obtainTaskDetail/${id}`, {
-                headers: { authorization: token, Accept: "application/json" },
-            });
-            const data = await res.json();
+            const res = await fetchWithRateLimit(
+                `${urlip}class/obtainTaskDetail/${taskId}/`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        authorization: token,
+                    },
+                },
+            );
+            const data = await readJsonResponse(res);
             if (!res.ok)
                 throw new Error(data?.Error || "Error al cargar tarea");
             taskResponse = data;
             //console.log(taskResponse)
             if (data.task.grades) {
-                data.task.grades.forEach((g) =>
-                    grading.set(g.student_id, g.grade),
+                data.task.grades.forEach(
+                    (g: { student_id: number; grade: string }) =>
+                        grading.set(g.student_id, g.grade),
                 );
             }
         } catch (err: any) {
@@ -141,7 +149,7 @@
                 headers: { authorization: token },
                 body: formData,
             });
-            const data = await res.json();
+            const data = await readJsonResponse(res);
             if (!res.ok) throw new Error(data?.Error || "Error al entregar");
             showAlert("Listo", "Tarea entregada", "green");
             selectedSubmissionFiles = [];
@@ -169,7 +177,7 @@
                     body: JSON.stringify({ student_id: studentId, grade }),
                 },
             );
-            const data = await res.json();
+            const data = await readJsonResponse(res);
             if (!res.ok) throw new Error(data?.Error || "Error al calificar");
             showAlert("Nota guardada", `Nota ${grade} asignada`, "green");
             grading.set(studentId, grade);
@@ -329,6 +337,23 @@
     }
     function closeImagePreview() {
         selectedImage = "";
+    }
+
+    function getTaskIdFromPath(pathname: string): string {
+        const taskSegment = pathname
+            .split("/")
+            .find((segment) => segment.startsWith("tarea-"));
+        return taskSegment?.replace("tarea-", "") || $page.params.id || "";
+    }
+
+    async function readJsonResponse(response: Response) {
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            throw new Error(
+                "La API devolvió HTML en vez de JSON. Revisa que la ruta del endpoint exista y termine con /.",
+            );
+        }
+        return response.json();
     }
 </script>
 
