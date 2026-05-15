@@ -178,27 +178,9 @@
         const value = String(photo || "");
         const apiBase = urlMedia.replace(/\/+$/, "");
 
-        if (!value) return value;
-        if (value.startsWith(`${apiBase}/media/`)) return value;
-        if (value.startsWith("/api/media/")) {
-            return `${apiBase.replace(/\/api$/, "")}${value}`;
+        if (value.match(/^https?:\/\/[^/]+\/media\//)) {
+            return value.replace(/\/media\//, "/api/media/");
         }
-        if (value.startsWith("/media/")) return `${apiBase}${value}`;
-        if (value.startsWith("media/")) return `${apiBase}/${value}`;
-
-        try {
-            const photoUrl = new URL(value);
-            const apiUrl = new URL(apiBase);
-            if (
-                photoUrl.origin === apiUrl.origin &&
-                photoUrl.pathname.startsWith("/api/media/")
-            ) {
-                return `${apiBase}${photoUrl.pathname}${photoUrl.search}${photoUrl.hash}`;
-            }
-        } catch {
-            return value;
-        }
-
         return value;
     }
     function hydrateClassMembers() {
