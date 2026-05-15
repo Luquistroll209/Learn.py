@@ -1043,7 +1043,7 @@ class inviteUser(APIView):
                 )
 
             # URL para unirse a la clase (frontend)
-            frontend_url = "http://lt209.ddns.net:8000"  # Cambia por tu URL base
+            frontend_url = settings.IP  # Cambia por tu URL base
             invitation_link = f"{frontend_url}/clases/join-{clase.id}"
 
             # URL API (para respaldo)

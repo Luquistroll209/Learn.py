@@ -405,7 +405,8 @@
                 showAlert("Error", errorData.Error, "red");
             }
         } catch (error) {
-            alert("Error al enviar la invitación");
+            //alert("Error al enviar la invitación" + error);
+            showAlert("Error al enviar la invitación: " + error);
         }
     }
 
