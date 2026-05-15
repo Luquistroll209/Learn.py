@@ -176,11 +176,13 @@
 
     function getAnnouncementPhotoSource(photo: string): string {
         const value = String(photo || "");
-        const apiBase = urlip.replace(/\/+$/, "");
+        const apiBase = urlMedia.replace(/\/+$/, "");
 
         if (!value) return value;
         if (value.startsWith(`${apiBase}/media/`)) return value;
-
+        if (value.startsWith("/api/media/")) {
+            return `${apiBase.replace(/\/api$/, "")}${value}`;
+        }
         if (value.startsWith("/media/")) return `${apiBase}${value}`;
         if (value.startsWith("media/")) return `${apiBase}/${value}`;
 
