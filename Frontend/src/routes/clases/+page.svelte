@@ -5,6 +5,7 @@
     import imgDefault from "$lib/images/classDefault.webp";
     import "$lib/style/Clases.css";
     import { fetchWithRateLimit } from "$lib/utils/fetchWithRateLimit";
+    import { goto } from "$app/navigation";
 
     let clases: any[] = [];
     let desplegado: number | null = null;
@@ -55,11 +56,6 @@
         desplegado = desplegado === index ? null : index;
     }
 
-    function abandonarClase(name: string) {
-        alert(`Has elegido abandonar la clase "${name}"`);
-        desplegado = null;
-    }
-
     function verTareas(id?: string | number) {
         if (!browser) return;
         if (id) {
@@ -69,20 +65,12 @@
         window.location.href = "/clases/tareas";
     }
 
-    function abrirForo(name: string) {
-        alert(`Abrir foro de "${name}"`);
-    }
-
-    function materiales(name: string) {
-        alert(`Ver materiales de "${name}"`);
-    }
-
     function configurarClase(id: string | number, name: string) {
-        alert(`Configurar clase: ${name}`);
+        goto(`/clases/clase-${id}/dashboard`);
     }
 
     function invitarClase(id: string | number, name: string) {
-        alert(`Invitar a clase: ${name}`);
+        goto(`/clases/clase-${id}/dashboard`);
     }
 
     function crearNuevaClase() {
@@ -109,7 +97,7 @@
         ) {
             return clase.imagen_url;
         }
-        return `${urlMedia}${String(clase.imagen_url).replace(/^\/+/, "")}`;
+        return `${urlMedia.replace(/\/+$/, "")}/${String(clase.imagen_url).replace(/^\/+/, "")}`;
     }
 
     // Función original para cargar clases
@@ -336,14 +324,6 @@
                                     </button>
                                     {#if desplegado === i}
                                         <div class="menu">
-                                            <button
-                                                on:click|stopPropagation={() =>
-                                                    abandonarClase(clase.name)}
-                                            >
-                                                <i class="fa-solid fa-door-open"
-                                                ></i>
-                                                Abandonar clase
-                                            </button>
                                             <button
                                                 on:click|stopPropagation={() =>
                                                     configurarClase(

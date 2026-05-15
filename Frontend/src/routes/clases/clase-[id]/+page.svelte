@@ -167,7 +167,14 @@
         if (!clase?.imagen_url) return imgDefault;
         if (String(clase.imagen_url).startsWith("http"))
             return clase.imagen_url;
-        return `${urlMedia}${clase.imagen_url}`;
+        return `${urlMedia.replace(/\/+$/, "")}/${String(clase.imagen_url).replace(/^\/+/, "")}`;
+    }
+
+    function normalizeAssetUrl(path: string): string {
+        if (!path) return "";
+        if (path.startsWith("http://") || path.startsWith("https://"))
+            return path;
+        return `${urlMedia.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
     }
 
     function hydrateClassMembers() {
@@ -1455,7 +1462,10 @@
                             {#if announcement.photos && announcement.photos.length > 0}
                                 <div class="announcement-photos">
                                     {#each announcement.photos as photo}
-                                        <img src={photo} alt="foto anuncio" />
+                                        <img
+                                            src={normalizeAssetUrl(photo)}
+                                            alt="foto anuncio"
+                                        />
                                     {/each}
                                 </div>
                             {/if}

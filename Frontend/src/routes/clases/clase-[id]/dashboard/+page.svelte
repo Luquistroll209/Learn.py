@@ -156,7 +156,7 @@
         if (!classData?.imagen_url) return imgDefault;
         if (String(classData.imagen_url).startsWith("http"))
             return classData.imagen_url;
-        return `${urlMedia}${classData.imagen_url}`;
+        return `${urlMedia.replace(/\/+$/, "")}/${String(classData.imagen_url).replace(/^\/+/, "")}`;
     }
 
     function formatDate(dateValue: string | null | undefined): string {
@@ -210,7 +210,7 @@
         ) {
             return photoPath;
         }
-        return `${urlMedia}${photoPath.replace(/^\/+/, "")}`;
+        return `${urlMedia.replace(/\/+$/, "")}/${photoPath.replace(/^\/+/, "")}`;
     }
 
     function parseTaskStatus(status: string): string {
