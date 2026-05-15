@@ -2,11 +2,12 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { browser } from "$app/environment";
-    import { urlip } from "$lib/config";
+    import { urlip, urlMedia } from "$lib/config";
     import { showAlert } from "$lib/store/alertStore.js";
     import Alert from "$lib/components/alert.svelte";
     import "$lib/style/inClass.css";
     import "$lib/style/task.css";
+
     import { fetchWithRateLimit } from "$lib/utils/fetchWithRateLimit";
 
     let id = $page.params.id ?? "";
