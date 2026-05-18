@@ -330,6 +330,7 @@
 
         return value;
     }
+
     const acceptAttr = () =>
         task && !task.allow_any_file_type
             ? task.allowed_extensions
@@ -617,7 +618,7 @@
                             {#each task.submission.files as file}
                                 <a
                                     class="submitted-file"
-                                    href={file.file_url}
+                                    href={normalizeAssetUrl(file.file_url)}
                                     target="_blank"
                                 >
                                     <div class="submitted-file-main">
