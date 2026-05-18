@@ -3,6 +3,7 @@
     import { page } from "$app/stores";
     import { browser } from "$app/environment";
     import { urlip, urlMedia } from "$lib/config";
+
     import { showAlert } from "$lib/store/alertStore.js";
     import Alert from "$lib/components/alert.svelte";
     import "$lib/style/inClass.css";
@@ -316,13 +317,17 @@
         };
     };
 
-    function normalizeAssetUrl(photo: string): string {
-        const value = String(photo || "");
+    function normalizeAssetUrl(url: string): string {
+        const value = String(url || "");
         const apiBase = urlMedia.replace(/\/+$/, "");
-
+        if (value.includes("/api/media/")) return value;
         if (value.match(/^https?:\/\/[^/]+\/media\//)) {
-            return value.replace(/\/media\//, "/api/media/");
+            return value.replace("/media/", "/api/media/");
         }
+        if (value.startsWith("/media/")) {
+            return `${apiBase}/api${value}`;
+        }
+
         return value;
     }
     const acceptAttr = () =>
